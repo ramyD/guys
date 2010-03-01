@@ -48,6 +48,10 @@ string noonce;
 string oauthVersion;
 string callBack;
 
+string token;
+string file;
+string fileSize;
+
 CURL *curl;
 
 string getTimeInSeconds() {
@@ -78,6 +82,7 @@ void initializeGlobalVariables() {
     noonce = makeNoonce();
     oauthVersion = "1.0";
     callBack = "oob";
+    
     curl = curl_easy_init();
 }
 
@@ -104,7 +109,6 @@ string urlEncode(string &stringToEncode) {
 
 vector <string> getBasicHeader(string signature = "0") {
     vector <string> basicHeader;
-    
     basicHeader.push_back("Authorization: ");
     basicHeader.push_back("OAuth realm=" + realm + ",");
     basicHeader.push_back("oauth_consumer_key=" + consumerKey +",");
@@ -127,7 +131,6 @@ string getBaseString() {
     header = getBasicHeader();
     header.erase(header.begin(), header.begin()+2); //erase first 2 elements so we get only the parameters 
     sort(header.begin(), header.end() ); //sorting the remaining elements
-    header.erase(header.begin(), header.begin()+1); //erase callback
     for (unsigned int i=0; i<header.size(); i++) { //concatenating base string elements
         replaceInString(header[i], ",", "&");
     }
@@ -135,23 +138,26 @@ string getBaseString() {
     requestUrl = requestTokenUrl;
     urlEncode(printedHeader); //encoding parameters
     urlEncode(requestUrl); //encoding parameters
-    baseString = httpMethod + "&" + requestTokenUrl + "&" + printedHeader; //putting the base string together
+    replaceInString(requestUrl, "%2E", "."); //i guess we aren't supposed to encode periods?
+    replaceInString(printedHeader, "%2E", ".");
+    replaceInString(printedHeader, "%5F", "_");
+    replaceInString(printedHeader, "%2D", "-");
+    baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
 
     return baseString;
 }
 
 int calculateBase64Size(int digestSize) {
     int newSize;
-    //newSize = (digestSize + 2 - ((digestSize + 2) % 3)) * 4 / 3;
-    newSize = (digestSize + 2) / 3 * 4;
+    newSize = (digestSize + 2 - ((digestSize + 2) % 3)) * 4 / 3;
     return newSize;
 }
 
 string encryptAndBase64(string inputKey, string inputText) {
     //inputKey = "kd94hf93k423kf44&pfkkdhi9sl3r4s00";
-    inputKey = "owBYqITppRzX4vfi920bvLpZcUUvJP2P8TCJ4DHvJz4&";
+    //inputKey = "owBYqITppRzX4vfi920bvLpZcUUvJP2P8TCJ4DHvJz4&";
     //inputText = "GET&http%3A%2F%2Fphotos.example.net%2Fphotos&file%3Dvacation.jpg%26oauth_consumer_key%3Ddpf43f3p2l4k3l03%26oauth_nonce%3Dkllo9940pd9333jh%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1191242096%26oauth_token%3Dnnch734d00sl2jdk%26oauth_version%3D1.0%26size%3Doriginal";
-    cout << "base string is: " << inputText << endl;
+
     byte *key = (byte*)inputKey.c_str(); //initializing key
     byte digest [ CryptoPP::HMAC<CryptoPP::SHA1>::DIGESTSIZE ]; //initlizing digest length
 
@@ -178,10 +184,9 @@ string getOauthSignature(string stringToSign) {
     string consumerSecret;
     string hmacKey;
     string oauthSignature;
-    string token;
     
     consumerSecret = "owBYqITppRzX4vfi920bvLpZcUUvJP2P8TCJ4DHvJz4&";
-    token = "";
+    //consumerSecret = "kd94hf93k423kf44&pfkkdhi9sl3r4s00";
     hmacKey = consumerSecret; //appending an ampersand even though no token is present
     //urlEncode(hmacKey); //encoding
     oauthSignature = encryptAndBase64(hmacKey, stringToSign);
@@ -198,13 +203,14 @@ string getCurlHeader() {
     baseString = getBaseString();
     signature = getOauthSignature(baseString);
     
-    cout << "signature is: " << signature << endl;
+    cout << endl << "signature " << signature << endl;
     
     header = getBasicHeader(signature);
-    sort(header.begin()+2, header.end() ); //sorting all but the first 2 elements of thea header in alphabetical order
+    header.erase(header.begin(), header.begin()+2); //erase first 2 elements so we get only the parameters 
+    sort(header.begin(), header.end() ); //sorting all but the first 2 elements of thea header in alphabetical order
     headerString = printVector(header);
     replaceInString(headerString, ",", "&");//concatenating base string elements
-    urlEncode(headerString);
+    //urlEncode(headerString);
     
     return headerString;
 }
@@ -228,16 +234,20 @@ int main(int argc, char** argv) {
     string curlUrl;
     
     curlHeader = getCurlHeader();
+    
     curlCookie = "/home/ramy/cpp/oauth/twitter/cookies.txt";
     curlUrl = "http://twitter.com/oauth/request_token";
     
-    curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
+    curlUrl = curlUrl + "?" + curlHeader;
+    
+    cout << "curl url: " << curlUrl << endl;
+    
+    //curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
     //curl_easy_setopt(curl, CURLOPT_HEADER, "Authenticate: OAuth realm=\"http://twitter.com/\"");
-    //curl_easy_setopt(curl, CURLOPT_HEADER, "WWW-Authenticate: OAuth realm=\"http://sp.example.com/\" ");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &curlapiPageBuffer);
-    //curl_easy_setopt(curl, CURLOPT_POST, 1);
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+    curl_easy_setopt(curl, CURLOPT_POST, 1);
+    //curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(curl, CURLOPT_COOKIE, curlCookie.c_str() );
     curl_easy_setopt(curl, CURLOPT_COOKIEJAR, curlCookie.c_str() );
