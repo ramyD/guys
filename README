@@ -1,5 +1,11 @@
 Guys version 0.07
 
+to install:
+	* download the source or do a pull
+	* just type "make"
+	* it will create an executable called "guys"
+	* just move that to your /usr/local/bin or what ever and off you go!
+
 new features:
 	* code has been reorganized for easy readability
 	* you can now quick post! like so: $ guys -t omg! quick posting!
