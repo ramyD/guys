@@ -3,6 +3,7 @@
 # requiers dialog package
 # todo: check if dialog package is there, advise otherwise
 # use a gtk/X dialogue when packaging into debs
+# get a full demo script here: http://www.linuxjournal.com/files/linuxjournal.com/linuxjournal/articles/024/2460/2460l1.html
 dialog --title "Twitter Account!" \
    --inputbox "Enter your Username:" 8 40 `pwd`\
    2>./dialog.ans
