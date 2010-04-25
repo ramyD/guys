@@ -19,7 +19,7 @@
  *      MA 02110-1301, USA.
  */
 //compile line: 
-///g++ -Wall -std=c++98 -pedantic -Os tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp guys0_06.cpp -o guys -lboost_program_options -lcurl
+///g++ -Wall -std=c++98 -pedantic -Os tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp guys0_06.cpp -o guys -lboost_program_options-mt -lcurl
 
 //twitter user info:
 ///lines 78 and 79
@@ -382,7 +382,7 @@ int main(int argc, char* argv[]){
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);    
 
-        if (vm.count("help") ){
+        if (vm.count("help") || argc == 1 ){
             cout << desc << endl;
             return 1;
         }
