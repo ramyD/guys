@@ -105,21 +105,37 @@ void Bitly::shorten(std::string uri){
             
             TiXmlHandle docHandle(&doc);
             
-            //TiXmlElement *status_code = docHandle.FirstChild("response").Child("status_code", 0).Element();
+            TiXmlElement *status_code = docHandle.FirstChild("response").Child("status_code", 0).Element();
         
-            /*
+           /* 
              * assume status will be 200 for now. 
              * @TODO: add error handling
-            if(status_code->GetText() ==  "200"){
+           */
+            int statusCheck = atoi(status_code->GetText());
+            
+            bool shortenIsValid = 0;
+            if(200 == statusCheck ){
                 std::cout << "status 200" << std::endl;
-            }else{
-                std::cout << "status something else" << std::endl;
+                shortenIsValid = 1;
+            }else if(403 == statusCheck){
+                std::cout << "RATE_LIMIT_EXCEEDED" << std::endl;
+                //shortenIsValid = 0;
+            }else if(500 == statusCheck){
+                std::cout << "INVALID_URI or MISSING_ARG_LOGIN" << std::endl;
+                //shortenIsValid = 0;
+            }else if(503 == statusCheck){
+                std::cout << "UNKNOWN_ERROR" << std::endl;
+                //shortenIsValid = 0;
             }
-            */
             
-            TiXmlElement *shortUrl = docHandle.FirstChild("response").Child("data", 0).Child("url",0).Element();
-            
-            std::cout << shortUrl->GetText() << std::endl;
+            if(shortenIsValid){
+                TiXmlElement *shortUrl = docHandle.FirstChild("response").Child("data", 0).Child("url",0).Element();
+                std::cout << shortUrl->GetText() << std::endl;
+                //return shortUrl->GetText();
+            }else{
+                std::cout << "encountered an error, returning original uri" << uri << std::endl;
+                //return uri;
+            }
         }
     }
     return;
