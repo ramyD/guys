@@ -27,10 +27,16 @@ int Guys::interpretArguments(int argc, char* argv[]) {
 		displayHelp();
 		return 0;
 	}
+    
+    //get the users input
+    std::ostringstream quickPost;
+    
+    /*
+     *here, parse the user's input in order to do some regexps and use URL shortener
+     */
 
 	if (arguments[1] == "-t" || arguments[1] == "--twitter") {
-		std::ostringstream quickPost;
-		Twitter *twitter = new Twitter;
+        Twitter *twitter = new Twitter;
 		if (argc > 2) { //if the user inputed his post right after putting -t either by accident or on purpouse
 			for (int argumentNumber=2; argumentNumber<argc-1; argumentNumber++) { //we start at 2 because we want everything posted after the -t and not before
 				//we stop at argc-1 because the last input must not have a space after it lest we use an extra character for nothing.
@@ -43,7 +49,7 @@ int Guys::interpretArguments(int argc, char* argv[]) {
 	}
 
 	if (arguments[1] == "-f" || arguments[1] == "--facebook") {
-		std::ostringstream quickPost;
+		//std::ostringstream quickPost;
 		Facebook *facebook = new Facebook;
 		if (argc > 2) { //if the user inputed his post right after putting -f either by accident or on purpouse
 			for (int argumentNumber=2; argumentNumber<argc-1; argumentNumber++) { //we start at 2 because we want everything posted after the -t and not before
