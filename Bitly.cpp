@@ -32,27 +32,6 @@ Bitly::Bitly(){
     curl = curl_easy_init();
 }
 
-int Bitly::interpretArguments(int argc, char* argv[]){
-    if (argc < 2) { //if no arguments
-        std::cout << "usage: ./shortener http://www.google.com" << std::endl;
-        return 0;
-    }
-    
-    std::ostringstream unformattedArguments;
-    std::vector <std::string> arguments;
-    for (int i = 0; i < argc; i++){  //assign each argument to a string array alled "arguments"
-		unformattedArguments << argv[i];
-		arguments.push_back(unformattedArguments.str());
-		unformattedArguments.str("");
-	}
-    
-    if(arguments[1].length() > 0){
-        shorten(arguments[1]);
-    }
-    
-    return 0;
-}
-
 // This is the writer call back function used by curl
 static int bitlyWriter(char *data, size_t size, size_t nmemb, std::string *buffer){
   // What we will return
@@ -70,11 +49,11 @@ static int bitlyWriter(char *data, size_t size, size_t nmemb, std::string *buffe
   return result;
 }
 
-void Bitly::shorten(std::string uri){
+std::string Bitly::shorten(std::string uri){
     
     if(uri.length() == 0){
        //URI for shortening is empty
-        std::cout << "URI is empty" << std::endl;
+       //std::cout << "URI is empty" << std::endl;
     }else{
         //make the full URL to pass to the API
         fullUrl = "http://api.bit.ly/v3/shorten?login="+userlogin+"&apiKey="+apiKey+"&format=xml&uri="+uri;
@@ -107,17 +86,13 @@ void Bitly::shorten(std::string uri){
             
             TiXmlElement *status_code = docHandle.FirstChild("response").Child("status_code", 0).Element();
         
-           /* 
-             * assume status will be 200 for now. 
-             * @TODO: add error handling
-           */
+            //error checking
             int statusCheck = atoi(status_code->GetText());
-            
             bool shortenIsValid = 0;
             if(200 == statusCheck ){
-                std::cout << "status 200" << std::endl;
+                //std::cout << "status 200" << std::endl;
                 shortenIsValid = 1;
-            }else if(403 == statusCheck){
+            }/*else if(403 == statusCheck){
                 std::cout << "RATE_LIMIT_EXCEEDED" << std::endl;
                 //shortenIsValid = 0;
             }else if(500 == statusCheck){
@@ -126,17 +101,18 @@ void Bitly::shorten(std::string uri){
             }else if(503 == statusCheck){
                 std::cout << "UNKNOWN_ERROR" << std::endl;
                 //shortenIsValid = 0;
-            }
+            }*/
+                //std::cout << uri << std::endl;
             
             if(shortenIsValid){
                 TiXmlElement *shortUrl = docHandle.FirstChild("response").Child("data", 0).Child("url",0).Element();
-                std::cout << shortUrl->GetText() << std::endl;
-                //return shortUrl->GetText();
+                //std::cout << shortUrl->GetText() << std::endl;
+                return (std::string) shortUrl->GetText();
             }else{
-                std::cout << "encountered an error, returning original uri" << uri << std::endl;
-                //return uri;
+                //std::cout << "encountered an error, returning original uri" << uri << std::endl;
+                return uri;
             }
         }
     }
-    return;
+    return "";
 }

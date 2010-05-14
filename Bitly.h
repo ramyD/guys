@@ -11,8 +11,7 @@
 class Bitly{
 public:
 	Bitly();
-    int interpretArguments(int argc, char* argv[]);
-	void shorten(std::string uri); //shorten a URL
+	std::string shorten(std::string uri); //shorten a URL
 
 private:
 	std::string userlogin;

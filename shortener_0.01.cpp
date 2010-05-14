@@ -8,6 +8,6 @@
 
 int main(int argc, char* argv[]){
 	Bitly *bitly = new Bitly;
-	bitly->interpretArguments(argc, argv); //interprets and acts on all arguments
-	return 0;
+    std::cout << bitly->shorten(argv[1]) << std::endl; //interprets and acts on all arguments
+	return 1;
 }
