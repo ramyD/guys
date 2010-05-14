@@ -1,6 +1,6 @@
 /*
  * 
- * g++ -Wall -std=c++98 -pedantic -Os tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp Bitly.cpp shortener_0.01.cpp -o shortener
+ * g++ -Wall -std=c++98 -pedantic -Os tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp Bitly.cpp shortener_0.01.cpp -lcurl -o shortener
  * 
  * */
 
