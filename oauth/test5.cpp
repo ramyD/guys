@@ -159,7 +159,8 @@ string getBaseString() {
     requestUrl = requestTokenUrl;
     urlEncode(printedHeader); //encoding parameters
     urlEncode(requestUrl); //encoding parameters
-    baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
+    //baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
+    baseString =  requestUrl + "&" + printedHeader; //putting the base string together
 
     return baseString;
 }
@@ -202,7 +203,7 @@ string getOauthSignature(string stringToSign) {
     string hmacKey;
     string oauthSignature;
     
-    consumerSecret = "owBYqITppRzX4vfi920bvLpZcUUvJP2P8TCJ4DHvJz4&";
+    consumerSecret = "hY3hvDNcgovsIkHrAgnzYKxS2klkVJLP8d99KJv5KpI&";
     //consumerSecret = "kd94hf93k423kf44&pfkkdhi9sl3r4s00";
     hmacKey = consumerSecret; //appending an ampersand even though no token is present
     //urlEncode(hmacKey); //encoding
@@ -255,27 +256,35 @@ int main(int argc, char** argv) {
     curlCookie = "/home/ramy/cpp/guys/git/guys/oauth/cookies.txt";
     curlUrl = "http://twitter.com/oauth/request_token";
     
-    curlUrl = curlUrl + "?" + curlHeader;
-    
+    //curlUrl = curlUrl + "?" + curlHeader;
     //cout << "curl url: " << curlUrl << endl;
+    
     cout << "curl header: " << curlHeader << endl;
+    
+    //this is the header structure i am supposed to use...
+    //frak
+     struct curl_slist *headers=NULL; /* init to NULL is important */
+     headers = curl_slist_append(headers, "Hey-server-hey: how are you?");
+     headers = curl_slist_append(headers, "X-silly-content: yes");
+ 
     
     //curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
     //curl_easy_setopt(curl, CURLOPT_HEADER, 1);
     //curl_easy_setopt(curl, CURLOPT_HEADER, "Authenticate: OAuth realm=\"http://twitter.com/\"");
-    //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, );
+    //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlHeader.c_str() );
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers );
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &curlapiPageBuffer);
-    curl_easy_setopt(curl, CURLOPT_POST, 1);
+    //curl_easy_setopt(curl, CURLOPT_POST, 1);
     //curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    curl_easy_setopt(curl, CURLOPT_COOKIE, curlCookie.c_str() );
-    curl_easy_setopt(curl, CURLOPT_COOKIEJAR, curlCookie.c_str() );
-    curl_easy_setopt(curl, CURLOPT_COOKIEFILE, curlCookie.c_str() );
+    //curl_easy_setopt(curl, CURLOPT_COOKIE, curlCookie.c_str() );
+    //curl_easy_setopt(curl, CURLOPT_COOKIEJAR, curlCookie.c_str() );
+    //curl_easy_setopt(curl, CURLOPT_COOKIEFILE, curlCookie.c_str() );
     //curl_easy_setopt(curl, CURLOPT_POSTFIELDS, curlHeader.c_str() );
     curl_easy_setopt(curl, CURLOPT_URL, curlUrl.c_str() );
 
-    //curlResult = curl_easy_perform(curl);
+    curlResult = curl_easy_perform(curl);
 
     cout << curlapiPageBuffer << endl;
 
