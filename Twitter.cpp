@@ -2,8 +2,8 @@
 
 Twitter::Twitter(){ //we put the constructor at the top so the we can quickly see and edit user credentials
 	//login credentisl
-    UserName = "your username here";
-    Password = "your password here";
+    UserName = "";
+    Password = "";
     Account = UserName + ':' + Password;
 
     if (UserName.length() == 0){

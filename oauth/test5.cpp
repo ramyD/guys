@@ -159,10 +159,6 @@ string getBaseString() {
     requestUrl = requestTokenUrl;
     urlEncode(printedHeader); //encoding parameters
     urlEncode(requestUrl); //encoding parameters
-    replaceInString(requestUrl, "%2E", "."); //i guess we aren't supposed to encode periods?
-    replaceInString(printedHeader, "%2E", ".");
-    replaceInString(printedHeader, "%5F", "_");
-    replaceInString(printedHeader, "%2D", "-");
     baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
 
     return baseString;
@@ -261,7 +257,8 @@ int main(int argc, char** argv) {
     
     curlUrl = curlUrl + "?" + curlHeader;
     
-    cout << "curl url: " << curlUrl << endl;
+    //cout << "curl url: " << curlUrl << endl;
+    cout << "curl header: " << curlHeader << endl;
     
     //curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
     //curl_easy_setopt(curl, CURLOPT_HEADER, 1);
@@ -278,7 +275,7 @@ int main(int argc, char** argv) {
     //curl_easy_setopt(curl, CURLOPT_POSTFIELDS, curlHeader.c_str() );
     curl_easy_setopt(curl, CURLOPT_URL, curlUrl.c_str() );
 
-    curlResult = curl_easy_perform(curl);
+    //curlResult = curl_easy_perform(curl);
 
     cout << curlapiPageBuffer << endl;
 
