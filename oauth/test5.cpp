@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include <crypto++/cryptlib.h>
 #include <crypto++/sha.h>
@@ -76,7 +77,7 @@ void initializeGlobalVariables() {
     httpMethod = "GET";
     requestTokenUrl = "http://twitter.com/oauth/request_token";
     realm = "http://twitter.com/";
-    consumerKey = "3LzLFcBF2HKerm3DFb05EQ";
+    consumerKey = "KPheeTlyurIeJfp2zC5bQg";
     signatureMethod = "HMAC-SHA1";
     timeStamp = getTimeInSeconds();
     noonce = makeNoonce();
@@ -102,9 +103,29 @@ string replaceInString(string &stringToSwap, const string find, string replace) 
     return stringToSwap;
 }
 
+bool isCharacterReserved(char characterToEvaluate) {
+	//these are all the unreserved characters that we don't need to decode
+	char unreservedCharacters[] = {'a','A','b','B','c','C','d','D','e','E','f','F','g','G','h','H','i','I','j','J','k','K','l','L','m','M','n','N','o','O','p','P','q','Q','r','R','s','S','t','T','u','U','v','V','w','W','x','X','y','Y','z','Z','0','1','2','3','4','5','6','7','8','9','-','.','_','~'};
+	set<char> unreservedCharSet(unreservedCharacters, unreservedCharacters + sizeof(unreservedCharacters) );
+	bool isReserved = false; //by default, we assume the character is part of the unreserved set
+	if ( unreservedCharSet.find(characterToEvaluate) == unreservedCharSet.end() ) {
+		isReserved = true;
+	}
+	
+	return isReserved;
+}
+
 string urlEncode(string &stringToEncode) {
-    stringToEncode = curl_easy_escape(curl, stringToEncode.c_str(), 0 );
-    return stringToEncode;
+	ostringstream temporaryStream;
+	for (unsigned int i=0; i<stringToEncode.size(); i++) {
+		if ( isCharacterReserved(stringToEncode[i]) ) {
+			temporaryStream << curl_easy_escape(curl, &stringToEncode[i], 0 );
+		} else {
+			temporaryStream << stringToEncode[i];
+		}
+	}
+	
+	return temporaryStream.str();
 }
 
 vector <string> getBasicHeader(string signature = "0") {
@@ -235,7 +256,7 @@ int main(int argc, char** argv) {
     
     curlHeader = getCurlHeader();
     
-    curlCookie = "/home/ramy/cpp/oauth/twitter/cookies.txt";
+    curlCookie = "/home/ramy/cpp/guys/git/guys/oauth/cookies.txt";
     curlUrl = "http://twitter.com/oauth/request_token";
     
     curlUrl = curlUrl + "?" + curlHeader;
@@ -243,7 +264,9 @@ int main(int argc, char** argv) {
     cout << "curl url: " << curlUrl << endl;
     
     //curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
+    //curl_easy_setopt(curl, CURLOPT_HEADER, 1);
     //curl_easy_setopt(curl, CURLOPT_HEADER, "Authenticate: OAuth realm=\"http://twitter.com/\"");
+    //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, );
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &curlapiPageBuffer);
     curl_easy_setopt(curl, CURLOPT_POST, 1);
