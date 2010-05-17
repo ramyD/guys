@@ -150,7 +150,7 @@ void Twitter::getTimeline(void){
     //cout << "sending..." << endl; //unix style coding requires no confirmation for expected behaviours
     twitterResult = curl_easy_perform(curl);
 
-    std::cout << apiPageBuffer << std::endl; //will print the xml file
+    //std::cout << apiPageBuffer << std::endl; //will print the xml file
     
     TiXmlDocument doc("friends_timeline.xml");
     bool loadOkay = doc.Parse(apiPageBuffer.c_str(), 0, TIXML_ENCODING_UTF8);
