@@ -159,8 +159,8 @@ string getBaseString() {
     requestUrl = requestTokenUrl;
     urlEncode(printedHeader); //encoding parameters
     urlEncode(requestUrl); //encoding parameters
-    //baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
-    baseString =  requestUrl + "&" + printedHeader; //putting the base string together
+    baseString = httpMethod + "&" + requestUrl + "&" + printedHeader; //putting the base string together
+    //baseString =  requestUrl + "&" + printedHeader; //putting the base string together
 
     return baseString;
 }
@@ -264,8 +264,9 @@ int main(int argc, char** argv) {
     //this is the header structure i am supposed to use...
     //frak
      struct curl_slist *headers=NULL; /* init to NULL is important */
-     headers = curl_slist_append(headers, "Hey-server-hey: how are you?");
-     headers = curl_slist_append(headers, "X-silly-content: yes");
+     headers = curl_slist_append(headers, curlHeader.c_str());
+     //headers = curl_slist_append(headers, "Hey-server-hey: how are you?");
+     //headers = curl_slist_append(headers, "X-silly-content: yes");
  
     
     //curl_easy_setopt(curl, CURLOPT_HEADER, curlHeader.c_str() );
