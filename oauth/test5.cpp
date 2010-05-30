@@ -74,7 +74,7 @@ string makeNoonce() {
 }
 
 void initializeGlobalVariables() {
-    httpMethod = "GET";
+    httpMethod = "POST";
     requestTokenUrl = "http://twitter.com/oauth/request_token";
     realm = "http://twitter.com/";
     consumerKey = "KPheeTlyurIeJfp2zC5bQg";
