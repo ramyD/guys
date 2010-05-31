@@ -118,9 +118,10 @@ std::string format::extract(std::string parameter, char delimitingCharacter, std
 		return 0;
 	}
 	
-	parameterPosition += parameter.size(); //get a location right at the end of the parameter, including +1 for the parameter divider, usually a =
-	valuePositionBegin = parameterPosition+1;
-	
+	parameterPosition += parameter.size(); //get a location right at the end of the parameter, 
+    //including +1 for the parameter divider, usually a = <------ too specific
+	valuePositionBegin = parameterPosition;
+    
 	valuePositionEnd = fullString.find_first_of(delimitingCharacter, valuePositionBegin);
 	
 	if (valuePositionEnd == std::string::npos) valuePositionEnd = fullString.size(); //if the delimeter is not found, assume it is the last parameter/value pair
