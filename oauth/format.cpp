@@ -68,6 +68,7 @@ std::string format::vectorToString(std::vector <std::string> stringToPrint) {
 
 std::string format::encrypt(std::string inputText, std::string inputKey) {
 	//inputText = "GET&http%3A%2F%2Fterm.ie%2Foauth%2Fexample%2Frequest_token.php&oauth_callback%3Doob%26oauth_consumer_key%3Dkey%26oauth_nonce%3D41GKFQTwZbxLaBOe6qkywsHcZMf%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1274944367%26oauth_version%3D1.0";
+	inputText = "POST&http%3A%2F%2Fapi.twitter.com%2Foauth%2Frequest%5Ftoken&oauth_consumer_key=dHbWZ6idD9VEuQ5tNUufA%26oauth_nonce%3D248256711275449040%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1275449040%26oauth_version%3D1.0";
 	std::cout << "encrypting this string: " << inputText << std::endl;
 	
 	byte *key = (byte*)inputKey.c_str(); //initializing key
