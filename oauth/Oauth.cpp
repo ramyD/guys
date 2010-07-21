@@ -23,18 +23,16 @@
 #include "format.h"
 #include "data.h"
 
-Oauth::Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string hMethod, std::string authMethod, std::string rtURL) {
+Oauth::Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string hMethod, std::string authMethod) {
 	httpMethod = hMethod;
-	requestTokenUrl = rtURL;
 	consumerKey = cKey;
 	consumerSecret = cSecret;
 	signatureMethod = authMethod;
-	timeStamp = getTime();
-	noonce = getNoonce();
 	oauthVersion = "1.0";
 	callBack = cbURL;
 	curl = curl_easy_init();
 }
+
 
 std::string Oauth::getTime() {
 	time_t seconds;
@@ -50,7 +48,7 @@ std::string Oauth::getNoonce() {
 	char junk[] = {':',';','<','=','>','?','@','[','\\',']','^','_','`'}; //junk characters from '0' in decimal to 'z' in decimal
 	std::set<char> junkCharacters(junk, junk + sizeof(junk) );
 	const int noonceLength = 32;
-	srand((unsigned) time(NULL)); //gives a seed based on time for the random function
+	srand((unsigned) (clock () + time(NULL) * CLOCKS_PER_SEC ) ); //gives a seed based on time for the random function
 	for (int i = 0; i < noonceLength; i++) {
 		tempChar = (char) (rand() % 75 + '0'); //75 is the number of lowercase letters + uppercase letters + numbers from 0 to 9 + 13 junk letters in between
 		if ( junkCharacters.find(tempChar) == junkCharacters.end() ) //find the temporary character in the set, if it is not found, proceede
@@ -59,12 +57,13 @@ std::string Oauth::getNoonce() {
 	return temporaryStream.str();
 }
 
-std::string Oauth::getBaseString() {
+std::string Oauth::getBaseString(std::string token) {
 	std::vector <std::string> baseString;
 	std::string returnString;
 	baseString.push_back("oauth_consumer_key=" + format::encode( consumerKey.c_str(), curl ) + "&");
 	baseString.push_back("oauth_signature_method=" + format::encode( signatureMethod.c_str(), curl ) + "&");
 	baseString.push_back("oauth_timestamp=" + format::encode( timeStamp.c_str(), curl ) + "&");
+	if ( !token.empty() ) baseString.push_back("oauth_token=" + format::encode( token, curl ) + "&");
 	baseString.push_back("oauth_nonce=" + format::encode( noonce.c_str(), curl ) + "&");
 	baseString.push_back("oauth_callback=" + format::encode( callBack.c_str(), curl ) + "&");
 	baseString.push_back("oauth_version=" + format::encode( oauthVersion.c_str(), curl ) + "&");
@@ -78,7 +77,7 @@ std::string Oauth::getSignatureBaseString(std::string baseString) {
 	std::vector <std::string> signatureBaseString;
 	std::string returnString;
 	signatureBaseString.push_back(format::encode( httpMethod.c_str(), curl ) + "&");
-	signatureBaseString.push_back(format::encode( requestTokenUrl.c_str(), curl ) + "&");
+	signatureBaseString.push_back(format::encode( requestUrl.c_str(), curl ) + "&");
 	signatureBaseString.push_back(format::encode( baseString, curl ) );
 	returnString = format::vectorToString(signatureBaseString);
 
@@ -87,7 +86,7 @@ std::string Oauth::getSignatureBaseString(std::string baseString) {
 	return returnString;
 }
 
-std::string Oauth::requestAccessToken() {
+std::string Oauth::requestRequestToken(std::string url) {
 	std::vector <std::string> basicHeader;
 	struct curl_slist *headers=NULL;
 	std::string key;
@@ -96,6 +95,11 @@ std::string Oauth::requestAccessToken() {
 	std::string signatureBaseString;
 	std::string signature;
 	std::string postReturn;
+	
+	
+	timeStamp = getTime();
+	noonce = getNoonce();
+	requestUrl = url;
 	
 	key = consumerSecret + "&";
 	
@@ -120,21 +124,78 @@ std::string Oauth::requestAccessToken() {
 	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
 	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
 	postData = format::replaceInString(postData, ", ", "&");
-	//postData = format::replaceInString(postData, "\"", "");
-	//requestTokenUrl = requestTokenUrl + "?" + postData; //append the data to the url
 	
 	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
 	std::cout << "post data: " << postData << std::endl << std::endl;
-	std::cout << "request url: " << requestTokenUrl << std::endl << std::endl << std::endl;
+	std::cout << "request url: " << requestUrl << std::endl << std::endl << std::endl;
 	
-	postReturn = post(postData, headers, requestTokenUrl);
+	postReturn = post(postData, headers, requestUrl);
 	
+	if ( ( postReturn.find("oauth_token=") != std::string::npos ) && ( postReturn.find("&oauth_token_secret=") != std::string::npos ) ) {
+		return postReturn;
+	} else {
+		std::cout << "authentication failed access token request" << std::endl;
+		return 0;
+	}
+}
+
+std::string Oauth::requestAccessToken(std::string token, std::string tokenString, std::string url) {
+	std::vector <std::string> basicHeader;
+	struct curl_slist *headers=NULL;
+	std::string key;
+	std::string postData;
+	std::string headerData;
+	std::string signatureBaseString;
+	std::string signature;
+	std::string postReturn;
+	
+	timeStamp = getTime();
+	noonce = getNoonce();
+	requestUrl = url+"?oauth_token="+token;
+	
+	key = consumerSecret + "&" + tokenString;
+	
+	if ( signatureMethod == "HMAC-SHA1") {
+		signatureBaseString = getSignatureBaseString( getBaseString( token ) );
+		signature = format::encrypt(signatureBaseString.c_str(), key.c_str());
+	} else {
+		signature = key;
+	}
+	
+	basicHeader.push_back("oauth_callback=\"" + format::encode( callBack.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_consumer_key=\"" + format::encode( consumerKey.c_str(), curl ) +"\", ");
+	basicHeader.push_back("oauth_nonce=\"" + format::encode( noonce.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_signature=\"" + format::encode( signature.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_signature_method=\"" + format::encode( signatureMethod.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_timestamp=\"" + format::encode( timeStamp.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_token=\"" + format::encode( token.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
+	
+	postData = format::vectorToString(basicHeader);
+	headerData = "Authorization: OAuth " + postData;
+	headers = curl_slist_append(headers, headerData.c_str() );
+	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
+	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
+	postData = format::replaceInString(postData, ", ", "&");
+	
+	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
+	std::cout << "post data: " << postData << std::endl << std::endl;
+	std::cout << "request url: " << requestUrl << std::endl << std::endl << std::endl;
+	
+	//httpMethod = "GET";
+	postReturn = post(postData, headers, requestUrl);
+	std::cout << "restricted data permission: " << postReturn << std::endl;
+	
+	return postReturn;
+	/*
+	//verify call back function 
 	if ( ( postReturn.find("oauth_token=") != std::string::npos ) && ( postReturn.find("&oauth_token_secret=") != std::string::npos ) ) {
 		return postReturn;
 	} else {
 		std::cout << "authentication failed" << std::endl;
 		return 0;
 	}
+	*/
 }
 
 std::string Oauth::post(std::string postData, struct curl_slist *headers, std::string url) {
@@ -143,11 +204,13 @@ std::string Oauth::post(std::string postData, struct curl_slist *headers, std::s
 	std::string curlHeaderBuffer;
 	
 	///*debug and verbose instructions*/
-	//struct data config;
-	//config.trace_ascii = 1; //enable ascii tracing
-	//curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, format::my_trace);
-	//curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
-	//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); //the DEBUGFUNCTION has no effect until we enable VERBOSE
+	/*
+	struct data config;
+	config.trace_ascii = 1; //enable ascii tracing
+	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, format::my_trace);
+	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); //the DEBUGFUNCTION has no effect until we enable VERBOSE
+	*/
 	
 	///*callback function instructions*/
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
@@ -176,23 +239,19 @@ std::string Oauth::post(std::string postData, struct curl_slist *headers, std::s
 	///*send the request*/
 	curlResult = curl_easy_perform(curl);
 	
-	///*clean up*/
+	///*clean up*/	
+	curl_slist_free_all(headers); //free the header list
+	//curl_easy_cleanup(curl); //clean up
+	
 	std::cout << curlHeaderBuffer << std::endl;
 	std::cout << curlapiPageBuffer << std::endl;
 	
-	curl_slist_free_all(headers); //free the header list
-	curl_easy_cleanup(curl); //clean up
-	
 	// Did we succeed?
-	if (curlResult == CURLE_OK){
+	if (curlResult == CURLE_OK) {
 		//std::cout << std::endl << "SUCCESS! message sent to Twitter!" << std::endl; //unix style coding requires no confirmation for expected behaviours
 		return curlapiPageBuffer;
-	} else{
+	} else {
 		std::cout << std::endl << "OUPS! there was an error. The message was not sent to URL." << std::endl;
 		return 0;
 	}
 }
-
-
-
-
