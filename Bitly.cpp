@@ -49,6 +49,42 @@ static int bitlyWriter(char *data, size_t size, size_t nmemb, std::string *buffe
   return result;
 }
 
+std::string Bitly::checkForUrl(std::string fullString){
+    
+    std::string urlStarts[] = {"http://", "www."};
+    bool needsEndExtension = false;
+    //std::string urlContains[] = {".com", ".net", ".org", ".co.uk", ".ca", ".tv"};
+    
+    int urlPos;
+    for (int n=0; n<2; n++){
+        //std::cout << "checking for " << urlStarts[n] << " in string " << fullString << std::endl;
+        urlPos = fullString.find(urlStarts[n]);
+        
+        if(urlPos != -1){
+            //std::cout << "found " << urlStarts[n] << " at position " << urlPos << std::endl;
+            if(n == 1){//if the url startx with www
+                needsEndExtension = true;//to compensate for the length of http://
+            }
+            break;
+        }
+    }
+    
+    size_t valuePositionBegin = urlPos;
+    size_t valuePositionEnd;
+    
+    valuePositionEnd = fullString.find_first_of(' ', valuePositionBegin);
+    
+	//if the delimeter is not found, assume that the URL is at the end of the string
+	if (valuePositionEnd == std::string::npos){
+        valuePositionEnd = fullString.size();
+    }
+
+    if(needsEndExtension)
+        return shorten("http://" + fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+    else
+        return shorten(fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+}
+
 std::string Bitly::shorten(std::string uri){
     
     if(uri.length() == 0){
@@ -56,9 +92,13 @@ std::string Bitly::shorten(std::string uri){
        //std::cout << "URI is empty" << std::endl;
     }else{
         //make the full URL to pass to the API
+        
+        apiPageBuffer.clear();
+        
         fullUrl = "http://api.bit.ly/v3/shorten?login="+userlogin+"&apiKey="+apiKey+"&format=xml&uri="+uri;
         
         //std::cout << "shortening: " << uri << std::endl;
+        //std::cout << "calling: " << fullUrl << std::endl;
         
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, bitlyWriter);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &apiPageBuffer);
