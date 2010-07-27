@@ -76,9 +76,13 @@ std::string getPassword() {
 	stringstream passwordStream;
 	do {
 		passwordChar = getchar();
-		passwordStream << passwordChar;
-		std::cout << '*';
+		if (passwordChar != 13 ) {
+			passwordStream << passwordChar;
+			std::cout << '*';
+		}
 	} while (passwordChar != 13 ); //13 is enter
+	
+	std::cout << std::endl;
 	
 	return passwordStream.str();
 }
