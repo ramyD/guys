@@ -20,27 +20,7 @@
 ///g++ -Wall -std=c++98 -pedantic -Os test6.cpp Oauth.cpp format.cpp -o test6 -lcurl -lcrypto++
 #include "Oauth.h"
 #include "format.h"
-/*
-std::string hackTwitter(std::string token) {
-	std::string twitterLoginPage;
-	std::string formAction;
-	std::string authenticityToken;
-	std::string userName;
-	std::string password;
-	std::string twitterCode;
-	
-	
-	twitterLoginPage = parsePage(token, "https://api.twitter.com/oauth/authorize");
-	formAction = getTwitterFormAction(&twitterLoginPage);
-	authenticityToken = getTwitterAuthenticityToken(&twitterLoginPage);
-	userName = getUserName(&twitterLoginPage);
-	password = getPassword(&twitterLoginPage);
-	
-	twitterCode = getCode(formAction, authenticityToken, userName, password);
-	
-	return twitterCode;
-}
-*/
+
 std::string parsePage(std::string token, std::string twitterURL) {
 	CURL *curl;
 	CURLcode curlResult;
@@ -55,6 +35,46 @@ std::string parsePage(std::string token, std::string twitterURL) {
 	curlResult = curl_easy_perform(curl);
 	
 	return twitterPageBuffer;
+}
+
+std::string getTwitterFormAction(std::string &twitterLoginPage) {
+	std::string tagForm = "<form action=\""
+	size_t tagBegin, tagEnd;
+	tagBegin = twitterLoginPage.find(tagForm);
+	tagBegin += tagForm.length(); //puts the tag after the first "
+	tagEnd = twitterLoginPage.find_first_of("\"", tagBegin+1); //finds the end "
+	tagEnd -= 1; //puts the tag right before the "
+	
+	//at this point, tagBegin and tagEnd have the inclusive position of the string we want, always counting from the begining.
+	
+	return twitterLoginPage.substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction
+}
+
+
+
+std::string hackTwitter(std::string token) {
+	std::string twitterLoginPage;
+	std::string formAction;
+	std::string authenticityToken;
+	std::string userName;
+	std::string password;
+	std::string twitterCode;
+	
+	std::string postAuthenticityToken, postOauthToken, postSessionEmailUser, postSessionPassword;
+	postAuthenticityToken = "authenticity_token";
+	postOauthToken = "oauth_token";
+	postSessionEmailUser = "session[username_or_email]";
+	postSessionPassword = "session[password]";
+	
+	twitterLoginPage = parsePage(token, "https://api.twitter.com/oauth/authorize");
+	formAction = getTwitterFormAction(&twitterLoginPage);
+	authenticityToken = getTwitterAuthenticityToken(&twitterLoginPage);
+	userName = getUserName(&twitterLoginPage);
+	password = getPassword(&twitterLoginPage);
+	
+	twitterCode = getCode(formAction, authenticityToken, userName, password);
+	
+	return twitterCode;
 }
 
 int main(int argc, char** argv)
@@ -79,12 +99,9 @@ int main(int argc, char** argv)
 	std::cout << std::endl << "token: " << token << std::endl;
 	std::cout << "token secret: " << tokenSecret << std::endl;
 	
-	//pinCode = hackTwitter(token);
+	pinCode = hackTwitter(token);
 	
 	accessTokenString = myOauth->requestAccessToken(token, tokenSecret, "https://api.twitter.com/oauth/authorize");
-	
-	
-	
 	
 	return 0;
 }
