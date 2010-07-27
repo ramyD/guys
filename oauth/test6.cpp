@@ -50,7 +50,38 @@ std::string getTwitterFormAction(std::string &twitterLoginPage) {
 	return twitterLoginPage.substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction
 }
 
+std::string getTwitterAuthenticityToken(&twitterLoginPage) {
+	std::string tagInput = "<input name=\"authenticity_token\" type=\"hidden\" value=\"";
+	size_t tagBegin, tagEnd;
+	tagBegin = twitterLoginPage.find(tagInput);
+	tagBegin += tagInput.length(); //puts the tag after the first "
+	tagEnd = twitterLoginPage.find_first_of("\"", tagBegin+1); //finds the end "
+	tagEnd -= 1; //puts the tag right before the "
+	
+	//at this point, tagBegin and tagEnd have the inclusive position of the string we want, always counting from the begining.
+	
+	return twitterLoginPage.substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction;
+}
 
+std::string getUserName() {
+	std::cout << "please enter your twitter username or email: " ;
+	getline (std::cin, message);
+	return message;
+}
+
+std::string getPassword() {
+	std::cout << "please enter your twitter password: ";
+	int charCount;
+	char passwordChar;
+	stringstream passwordStream;
+	do {
+		passwordChar = getchar();
+		passwordStream << passwordChar;
+		std::cout << '*';
+	} while (passwordChar != 13 ); //13 is enter
+	
+	return passwordStream.str();
+}
 
 std::string hackTwitter(std::string token) {
 	std::string twitterLoginPage;
@@ -60,19 +91,23 @@ std::string hackTwitter(std::string token) {
 	std::string password;
 	std::string twitterCode;
 	
+	std::string postUrl = "https://api.twitter.com/oauth/authorize";
+	std::string postData;
 	std::string postAuthenticityToken, postOauthToken, postSessionEmailUser, postSessionPassword;
 	postAuthenticityToken = "authenticity_token";
 	postOauthToken = "oauth_token";
 	postSessionEmailUser = "session[username_or_email]";
 	postSessionPassword = "session[password]";
 	
-	twitterLoginPage = parsePage(token, "https://api.twitter.com/oauth/authorize");
+	twitterLoginPage = parsePage(token, postUrl);
 	formAction = getTwitterFormAction(&twitterLoginPage);
 	authenticityToken = getTwitterAuthenticityToken(&twitterLoginPage);
-	userName = getUserName(&twitterLoginPage);
-	password = getPassword(&twitterLoginPage);
+	userName = getUserName();
+	password = getPassword();
 	
-	twitterCode = getCode(formAction, authenticityToken, userName, password);
+	postData = postAuthenticityToken + '=' + authenticityToken + '&' + postOauthToken + '=' + token + '&' + postSessionEmailUser + '=' + userName + '&' + postSessionPassword + '=' + password;
+	
+	twitterCode = getCode(postData, postUrl);
 	
 	return twitterCode;
 }
