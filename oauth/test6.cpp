@@ -87,13 +87,34 @@ std::string getPassword() {
 	return passwordStream.str();
 }
 
+std::string getCode(std::string postData, std::string postUrl) {
+	CURL *curl;
+	CURLcode curlResult;
+	std::string twitterPageBuffer
+	std::string url = twitterURL + token;
+	
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &twitterPageBuffer);
+	curl_easy_setopt(curl, CURLOPT_URL, postUrl.c_str() );
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str() );
+	curl_easy_setopt(curl, CURLOPT_POST, 1);
+	curlResult = curl_easy_perform(curl);
+	
+	return twitterPageBuffer;
+}
+
+std::string getPinNumber(std::string &twitterCodePage) {
+	//TODO i need to see this page in order to know what to parse
+}
+
 std::string hackTwitter(std::string token) {
 	std::string twitterLoginPage;
 	std::string formAction;
 	std::string authenticityToken;
 	std::string userName;
 	std::string password;
-	std::string twitterCode;
+	std::string twitterPinPage;
 	
 	std::string postUrl = "https://api.twitter.com/oauth/authorize";
 	std::string postData;
@@ -111,13 +132,13 @@ std::string hackTwitter(std::string token) {
 	
 	postData = postAuthenticityToken + '=' + authenticityToken + '&' + postOauthToken + '=' + token + '&' + postSessionEmailUser + '=' + userName + '&' + postSessionPassword + '=' + password;
 	
-	twitterCode = getCode(postData, postUrl);
+	twitterPinPage = getPinPage(postData, postUrl);
+	twitterPinNumber = getPinNumber(&twitterCodePage);
 	
-	return twitterCode;
+	return twitterPinNumber;
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	std::string requestTokenString;
 	std::string accessTokenString;
 	std::string token;
