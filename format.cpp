@@ -129,6 +129,20 @@ std::string format::extract(std::string parameter, char delimitingCharacter, std
 	return fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin);
 }
 
+std::string format::extractWithPos(int startPos, char delimitingCharacter, std::string fullString) {
+	unsigned int valuePositionBegin;
+	unsigned int valuePositionEnd;
+	
+    //including +1 for the parameter divider, usually a = <------ too specific
+	valuePositionBegin = startPos;
+    
+	valuePositionEnd = fullString.find_first_of(delimitingCharacter, valuePositionBegin);
+	
+	if (valuePositionEnd == std::string::npos) valuePositionEnd = fullString.size(); //if the delimeter is not found, assume it is the last parameter/value pair
+	
+	return fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin);
+}
+
 int format::my_trace(CURL *handle, curl_infotype type, unsigned char *data, size_t size, void *userp) {
   struct data *config = (struct data *)userp;
   const char *text;
