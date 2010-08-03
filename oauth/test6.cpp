@@ -153,14 +153,8 @@ int main(int argc, char** argv) {
 
 	requestTokenString = myOauth->requestRequestToken("https://api.twitter.com/oauth/request_token");
 	 
-<<<<<<< HEAD:oauth/test6.cpp
 	token = format::extract("oauth_token", '&', requestTokenString); 
 	tokenSecret = format::extract("oauth_token_secret", '&', requestTokenString); 
-=======
-	token = format::extract("oauth_token=", '&', accessTokenString); 
-	tokenSecret = format::extract("oauth_token_secret=", '&', accessTokenString); 
-	
->>>>>>> 2e04f6e72f21c676c4a1765f920435b78640ae40:oauth/test6.cpp
 	
 	std::cout << std::endl << "token: " << token << std::endl;
 	std::cout << "token secret: " << tokenSecret << std::endl;
