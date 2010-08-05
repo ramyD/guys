@@ -120,7 +120,7 @@ std::string format::extract(std::string parameter, char delimitingCharacter, std
 	
 	parameterPosition += parameter.size(); //get a location right at the end of the parameter, 
     //including +1 for the parameter divider, usually a = <------ too specific
-	valuePositionBegin = parameterPosition;
+	valuePositionBegin = parameterPosition + 1; //add 1 for first in array vs first in sequence
     
 	valuePositionEnd = fullString.find_first_of(delimitingCharacter, valuePositionBegin);
 	
