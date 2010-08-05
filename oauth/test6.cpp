@@ -112,7 +112,7 @@ std::string getCode(std::string postData, std::string postUrl) {
 	
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &twitterPageBuffer);
-	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, cookies.c_str() );
+	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, cookies.c_str() );
 	curl_easy_setopt(curl, CURLOPT_URL, postUrl.c_str() );
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str() );
