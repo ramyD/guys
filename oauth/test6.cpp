@@ -1,4 +1,4 @@
- //      test6.cpp
+//      test6.cpp
 //      
 //      Copyright 2010 Ramy d. <ramy.daghstani@gmail.com>
 //      
@@ -17,25 +17,24 @@
 //      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 //      MA 02110-1301, USA.
 
-///g++ -Wall -std=c++98 -pedantic -Os test6.cpp Oauth.cpp format.cpp -o test6 -lcurl -lcrypto++
+///g++ -Wall -std=//c++98 -pedantic -Os test6.cpp Oauth.cpp format.cpp -o test6 -lcurl -lcrypto++
 #include "Oauth.h"
 #include "format.h"
 #include "data.h"
 
-std::string parsePage(std::string token, std::string twitterURL) {
-	std::cout << "<<< parsing twitter login page: ";
+
+std::string parsePage(std::string token, std::string twitterURL, std::string *resultUrl) {
 	CURL *curl;
 	curl = curl_easy_init();
 	CURLcode curlResult;
 	std::string twitterPageBuffer;
 	std::string url = twitterURL + "?oauth_token=" + token;
-	std::string cookies = "cookies.txt";
+	*resultUrl = url;
 	
-	std::cout << url << std::endl;
+	std::cout << "<<< parsing twitter page: " << url << " with get request" << std::endl;
 	
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &twitterPageBuffer);
-	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, cookies.c_str() );
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str() );
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
@@ -101,22 +100,39 @@ std::string getPassword() {
 	return passwordStream.str();
 }
 
-std::string getCode(std::string postData, std::string postUrl) {
+std::string getCode(std::string postData, std::string postUrl, std::string refererUrl) {
 	std::cout << "<<< getting pin code from " << postUrl << std::endl;
 	CURL *curl;
 	curl = curl_easy_init();
 	CURLcode curlResult;
 	std::string twitterPageBuffer;
+	char *referedUrl = const_cast<char *>( refererUrl.c_str() );
 	std::string url = postUrl;
-	std::string cookies = "cookies.txt";
+	std::cout << "<<< referer URL is: " << referedUrl << std::endl;
+
+	char postCharData[186];
+	memset(postCharData, '\0', 186);
+	strncpy( postCharData, postData.c_str(), postData.length()-1 );
+	postCharData[postData.length()-1] = '\0';
+	postCharData[postData.length()] = '\0';
+	std::cout << "<<< post character data is: " << postCharData << std::endl;
+
+	///*debug and verbose instructions*/
+	struct data config;
+	config.trace_ascii = 1; //enable ascii tracing
+	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, format::my_trace);
+	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); //the DEBUGFUNCTION has no effect until we enable VERBOSE
 	
+
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &twitterPageBuffer);
-	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, cookies.c_str() );
+	curl_easy_setopt(curl, CURLOPT_REFERER, referedUrl );
 	curl_easy_setopt(curl, CURLOPT_URL, postUrl.c_str() );
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str() );
-	curl_easy_setopt(curl, CURLOPT_HEADER, 0);
+	//curl_easy_setopt(curl, CURLOPT_HEADER, 0);
+	//curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str() );
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postCharData );
 	curl_easy_setopt(curl, CURLOPT_POST, 1);
 	curlResult = curl_easy_perform(curl);
 	curl_easy_cleanup(curl);
@@ -138,18 +154,21 @@ std::string hackTwitter(std::string token) {
 	std::string password;
 	std::string twitterPinPage;
 	std::string twitterPinNumber;
+	std::string twitterAuthorizationUrl;
 	
 	std::string postUrl = "https://api.twitter.com/oauth/authorize";
 	std::string postData;
+	std::string postDataHeader;
+	std::stringstream postDataLength;
 	std::string postAuthenticityToken, postOauthToken, postSessionEmailUser, postSessionPassword;
 	postAuthenticityToken = "authenticity_token";
 	postOauthToken = "oauth_token";
 	postSessionEmailUser = "session%5Busername_or_email%5D";
 	postSessionPassword = "session%5Bpassword%5D";
 	
-	twitterLoginPage = parsePage(token, postUrl);
+	twitterLoginPage = parsePage(token, postUrl, &twitterAuthorizationUrl);
 	
-	std::cout << "twitter login page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl << twitterLoginPage << std::endl;
+	//std::cout << "twitter login page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl << twitterLoginPage << std::endl;
 	
 	formAction = getTwitterFormAction(&twitterLoginPage);
 	
@@ -160,10 +179,19 @@ std::string hackTwitter(std::string token) {
 	password = getPassword();
 	
 	postData = postAuthenticityToken + '=' + authenticityToken + '&' + postOauthToken + '=' + token + '&' + postSessionEmailUser + '=' + userName + '&' + postSessionPassword + '=' + password;
+
+	std::cout << "<<< post Data length: " << postData.length() << std::endl;
+	std::cout << "post data 2 length is : " << strlen(postData.c_str() ) << std::endl;	
+
+	//postDataHeader = "Content-Type: application/x-www-form-urlencode\nContent-Length: ";
+	//postDataLength << postData.length() -1;
+
+	//postData = postDataHeader + postDataLength.str() + "\n\n" + postData;
 	
 	std::cout << "post data is: " << postData << std::endl;
-	
-	twitterPinPage = getCode(postData, formAction);
+
+
+	twitterPinPage = getCode(postData, formAction, twitterAuthorizationUrl);
 	//twitterPinNumber = getPinNumber(&twitterPinPage);
 	
 	//return twitterPinNumber;
@@ -193,7 +221,13 @@ int main(int argc, char** argv) {
 	
 	pinCode = hackTwitter(token);
 	
-	std::cout << "pin code page ####################" << std::endl << pinCode << std::endl;
+	//std::cout << "pin code page ####################" << std::endl << pinCode << std::endl;
+
+	if( pinCode.find("Invalid user name or password") ) { 
+		std::cout << "user and pass are invalid" << std::endl;
+	} else {
+		std::cout << "pin code page might be valid ######################### " << std::endl << pinCode << std::endl;
+	}
 	
 	//accessTokenString = myOauth->requestAccessToken(token, tokenSecret, "https://api.twitter.com/oauth/authorize");
 	
