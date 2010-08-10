@@ -19,6 +19,7 @@ int main(int argc, char* argv[]){
     //std::cout << bitly->shorten(argv[1]) << std::endl; //interprets and acts on all arguments
     
     std::cout << bitly->checkForUrl("hello alexis www.alexismorin.com iuahe") <<  std::endl;
+    std::cout << bitly->checkForUrl("hello alexis www.alexismorin.com http://www.google.com iuahe") <<  std::endl;
     std::cout << bitly->checkForUrl("oiaei ah siuhd ah h dskja hskdh http://www.reddit.com iuaheiuahiueh ish sh") <<  std::endl;
     std::cout << bitly->checkForUrl("oiaei ah siuhd ah h dskja hskdh http://www.youtube.com iuaheiuahiueh ish sh") <<  std::endl;
     std::cout << bitly->checkForUrl("oiaei ah siuhd ah h dskja hskdh http://www.gmail.com") <<  std::endl;
