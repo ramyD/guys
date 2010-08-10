@@ -117,13 +117,14 @@ std::string getCode(std::string postData, std::string postUrl, std::string refer
 	postCharData[postData.length()] = '\0';
 	std::cout << "<<< post character data is: " << postCharData << std::endl;
 
-	///*debug and verbose instructions*/
+/*
+	///debug and verbose instructions
 	struct data config;
 	config.trace_ascii = 1; //enable ascii tracing
 	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, format::my_trace);
 	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); //the DEBUGFUNCTION has no effect until we enable VERBOSE
-	
+*/	
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &twitterPageBuffer);
@@ -140,11 +141,30 @@ std::string getCode(std::string postData, std::string postUrl, std::string refer
 	return twitterPageBuffer;
 }
 
-std::string getPinNumber(std::string &twitterCodePage) {
-	//TODO i need to see this page in order to know what to parse
+std::string getPinNumber(std::string *twitterCodePage) {
+	std::cout << "<<< parsing for twitter pin" << std::endl;
+	std::string tagInput = "<div id=\"oauth_pin\">";
+	size_t tagBegin, tagEnd;
+	tagBegin = twitterCodePage->find(tagInput);
+	tagBegin += tagInput.length(); //puts the tag after the first "
+	tagEnd = twitterCodePage->find_first_of("</div>", tagBegin+1); //finds the end "
 	
-	return "0";
+	//at this point, tagBegin and tagEnd have the inclusive position of the string we want, always counting from the begining.
+	
+	return twitterCodePage->substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction;
 }
+
+std::string cleanPinResult( std::string pinNumber ) {
+    std::string numStorage;
+    std::string::iterator it;
+
+    for (it=pinNumber.begin(); it < pinNumber.end(); ++it) {
+        if( *it >= 48 && *it <= 57) numStorage += *it;
+    }
+
+    return numStorage;
+}
+
 
 std::string hackTwitter(std::string token) {
 	std::string twitterLoginPage;
@@ -192,10 +212,10 @@ std::string hackTwitter(std::string token) {
 
 
 	twitterPinPage = getCode(postData, formAction, twitterAuthorizationUrl);
-	//twitterPinNumber = getPinNumber(&twitterPinPage);
-	
-	//return twitterPinNumber;
-	return twitterPinPage;
+	twitterPinNumber = getPinNumber(&twitterPinPage);
+    twitterPinNumber = cleanPinResult(twitterPinNumber);
+
+    return twitterPinNumber;
 }
 
 int main(int argc, char** argv) {
@@ -221,15 +241,11 @@ int main(int argc, char** argv) {
 	
 	pinCode = hackTwitter(token);
 	
-	//std::cout << "pin code page ####################" << std::endl << pinCode << std::endl;
+	std::cout << "pin code ####################" << std::endl << pinCode << std::endl;
 
-	if( pinCode.find("Invalid user name or password") ) { 
-		std::cout << "user and pass are invalid" << std::endl;
-	} else {
-		std::cout << "pin code page might be valid ######################### " << std::endl << pinCode << std::endl;
-	}
+	accessTokenString = myOauth->requestAccessToken(token, tokenSecret, pinCode, "https://api.twitter.com/oauth/access_token");
 	
-	//accessTokenString = myOauth->requestAccessToken(token, tokenSecret, "https://api.twitter.com/oauth/authorize");
+	std::cout << "access token string: " << std::endl << accessTokenString << std::endl;
 	
 	return 0;
 }

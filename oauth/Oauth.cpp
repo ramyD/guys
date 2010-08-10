@@ -57,15 +57,19 @@ std::string Oauth::getNoonce() {
 	return temporaryStream.str();
 }
 
-std::string Oauth::getBaseString(std::string token) {
+std::string Oauth::getBaseString(std::string token, std::string pinCode) {
 	std::vector <std::string> baseString;
 	std::string returnString;
 	baseString.push_back("oauth_consumer_key=" + format::encode( consumerKey.c_str(), curl ) + "&");
 	baseString.push_back("oauth_signature_method=" + format::encode( signatureMethod.c_str(), curl ) + "&");
 	baseString.push_back("oauth_timestamp=" + format::encode( timeStamp.c_str(), curl ) + "&");
-	if ( !token.empty() ) baseString.push_back("oauth_token=" + format::encode( token, curl ) + "&");
+	if( !token.empty() ) baseString.push_back("oauth_token=" + format::encode( token, curl ) + "&");
 	baseString.push_back("oauth_nonce=" + format::encode( noonce.c_str(), curl ) + "&");
-	baseString.push_back("oauth_callback=" + format::encode( callBack.c_str(), curl ) + "&");
+	if( !pinCode.empty() ) {
+		baseString.push_back("oauth_verifier=" + format::encode( pinCode.c_str(), curl ) + "&");
+	} else {
+		baseString.push_back("oauth_callback=" + format::encode( callBack.c_str(), curl ) + "&");
+	}
 	baseString.push_back("oauth_version=" + format::encode( oauthVersion.c_str(), curl ) + "&");
 	baseString = format::sortVector(baseString, '&');
 	returnString = format::vectorToString(baseString);
@@ -139,7 +143,7 @@ std::string Oauth::requestRequestToken(std::string url) {
 	}
 }
 
-std::string Oauth::requestAccessToken(std::string token, std::string tokenString, std::string url) {
+std::string Oauth::requestAccessToken(std::string token, std::string tokenString, std::string pinCode , std::string url) {
 	std::vector <std::string> basicHeader;
 	struct curl_slist *headers=NULL;
 	std::string key;
@@ -162,13 +166,13 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 		signature = key;
 	}
 	
-	basicHeader.push_back("oauth_callback=\"" + format::encode( callBack.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_consumer_key=\"" + format::encode( consumerKey.c_str(), curl ) +"\", ");
 	basicHeader.push_back("oauth_nonce=\"" + format::encode( noonce.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_signature=\"" + format::encode( signature.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_signature_method=\"" + format::encode( signatureMethod.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_timestamp=\"" + format::encode( timeStamp.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_token=\"" + format::encode( token.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_verifier=\"" + format::encode( pinCode.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	
 	postData = format::vectorToString(basicHeader);
