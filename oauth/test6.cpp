@@ -221,9 +221,11 @@ std::string hackTwitter(std::string token) {
 int main(int argc, char** argv) {
 	std::string requestTokenString;
 	std::string accessTokenString;
+	std::string resourceTokenString;
 	std::string token;
 	std::string tokenSecret;
 	std::string pinCode;
+	std::string status;
 	
 	Oauth *myOauth = new Oauth( "Oe8TiUN5SlfY2mRGKiRlxw", 
 								"fA4iyWCQL5oR2ArYNYHmJ7THZH2BOmdHGEv6XsUOKI", 
@@ -233,8 +235,8 @@ int main(int argc, char** argv) {
 
 	requestTokenString = myOauth->requestRequestToken("https://api.twitter.com/oauth/request_token");
 	 
-	token = format::extract("oauth_token", '&', requestTokenString); 
-	tokenSecret = format::extract("oauth_token_secret", '&', requestTokenString); 
+	token = format::extract("oauth_token", '&', requestTokenString); //this method should pass by reference, not by value
+	tokenSecret = format::extract("oauth_token_secret", '&', requestTokenString);
 	
 	std::cout << std::endl << "token: " << token << std::endl;
 	std::cout << "token secret: " << tokenSecret << std::endl;
@@ -246,6 +248,18 @@ int main(int argc, char** argv) {
 	accessTokenString = myOauth->requestAccessToken(token, tokenSecret, pinCode, "https://api.twitter.com/oauth/access_token");
 	
 	std::cout << "access token string: " << std::endl << accessTokenString << std::endl;
+	token = format::extract("oauth_token", '&', accessTokenString);
+	tokenSecret = format::extract("oauth_token_secret", '&', accessTokenString);
+
+	std::cout << "new token: " << token << std::endl << "new tokenSecret: " << tokenSecret << std::endl;
+
+	status = "this is my first Oauth post";
+	resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, status, "http://api.twitter.com/1/statuses/update.json");
+
+  std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
+
+
+
 	
 	return 0;
 }

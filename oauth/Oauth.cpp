@@ -57,20 +57,19 @@ std::string Oauth::getNoonce() {
 	return temporaryStream.str();
 }
 
-std::string Oauth::getBaseString(std::string token, std::string pinCode) {
+std::string Oauth::getBaseString(std::vector <std::string> extraParameters) {
 	std::vector <std::string> baseString;
 	std::string returnString;
 	baseString.push_back("oauth_consumer_key=" + format::encode( consumerKey.c_str(), curl ) + "&");
 	baseString.push_back("oauth_signature_method=" + format::encode( signatureMethod.c_str(), curl ) + "&");
 	baseString.push_back("oauth_timestamp=" + format::encode( timeStamp.c_str(), curl ) + "&");
-	if( !token.empty() ) baseString.push_back("oauth_token=" + format::encode( token, curl ) + "&");
 	baseString.push_back("oauth_nonce=" + format::encode( noonce.c_str(), curl ) + "&");
-	if( !pinCode.empty() ) {
-		baseString.push_back("oauth_verifier=" + format::encode( pinCode.c_str(), curl ) + "&");
-	} else {
-		baseString.push_back("oauth_callback=" + format::encode( callBack.c_str(), curl ) + "&");
-	}
 	baseString.push_back("oauth_version=" + format::encode( oauthVersion.c_str(), curl ) + "&");
+
+	for (size_t i=0; i<extraParameters.size(); i++) {
+		baseString.push_back( extraParameters[i] + "&" );
+	}
+
 	baseString = format::sortVector(baseString, '&');
 	returnString = format::vectorToString(baseString);
 	
@@ -92,6 +91,7 @@ std::string Oauth::getSignatureBaseString(std::string baseString) {
 
 std::string Oauth::requestRequestToken(std::string url) {
 	std::vector <std::string> basicHeader;
+	std::vector <std::string> extraParameters;
 	struct curl_slist *headers=NULL;
 	std::string key;
 	std::string postData;
@@ -100,15 +100,16 @@ std::string Oauth::requestRequestToken(std::string url) {
 	std::string signature;
 	std::string postReturn;
 	
-	
 	timeStamp = getTime();
 	noonce = getNoonce();
 	requestUrl = url;
 	
+	extraParameters.push_back("oauth_callback=" + format::encode( callBack.c_str(), curl ) );
+
 	key = consumerSecret + "&";
 	
 	if ( signatureMethod == "HMAC-SHA1") {
-		signatureBaseString = getSignatureBaseString( getBaseString() );
+		signatureBaseString = getSignatureBaseString( getBaseString( extraParameters ) );
 		signature = format::encrypt(signatureBaseString.c_str(), key.c_str());
 	} else {
 		signature = key;
@@ -145,6 +146,7 @@ std::string Oauth::requestRequestToken(std::string url) {
 
 std::string Oauth::requestAccessToken(std::string token, std::string tokenString, std::string pinCode , std::string url) {
 	std::vector <std::string> basicHeader;
+	std::vector <std::string> extraParameters;
 	struct curl_slist *headers=NULL;
 	std::string key;
 	std::string postData;
@@ -156,11 +158,14 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 	timeStamp = getTime();
 	noonce = getNoonce();
 	requestUrl = url+"?oauth_token="+token;
-	
+
+	extraParameters.push_back("oauth_token=" + format::encode( token.c_str(), curl ) );
+	extraParameters.push_back("oauth_verifier=" + format::encode( pinCode.c_str(), curl ) );
+
 	key = consumerSecret + "&" + tokenString;
 	
 	if ( signatureMethod == "HMAC-SHA1") {
-		signatureBaseString = getSignatureBaseString( getBaseString( token ) );
+		signatureBaseString = getSignatureBaseString( getBaseString( extraParameters ) );
 		signature = format::encrypt(signatureBaseString.c_str(), key.c_str());
 	} else {
 		signature = key;
@@ -175,6 +180,69 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 	basicHeader.push_back("oauth_verifier=\"" + format::encode( pinCode.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	
+	postData = format::vectorToString(basicHeader);
+	headerData = "Authorization: OAuth " + postData;
+	headers = curl_slist_append(headers, headerData.c_str() );
+	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
+	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
+	postData = format::replaceInString(postData, ", ", "&");
+	
+	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
+	std::cout << "post data: " << postData << std::endl << std::endl;
+	std::cout << "request url: " << requestUrl << std::endl << std::endl << std::endl;
+	
+	//httpMethod = "GET";
+	postReturn = post(postData, headers, requestUrl);
+	std::cout << "restricted data permission: " << postReturn << std::endl;
+	
+	return postReturn;
+	/*
+	//verify call back function 
+	if ( ( postReturn.find("oauth_token=") != std::string::npos ) && ( postReturn.find("&oauth_token_secret=") != std::string::npos ) ) {
+		return postReturn;
+	} else {
+		std::cout << "authentication failed" << std::endl;
+		return 0;
+	}
+	*/
+}
+
+std::string Oauth::requestResourceToken(std::string token, std::string tokenString, std::string status, std::string url) {
+	std::vector <std::string> basicHeader;
+	std::vector <std::string> extraParameters;
+	struct curl_slist *headers=NULL;
+	std::string key;
+	std::string postData;
+	std::string headerData;
+	std::string signatureBaseString;
+	std::string signature;
+	std::string postReturn;
+	
+	timeStamp = getTime();
+	noonce = getNoonce();
+	requestUrl = url;
+
+	extraParameters.push_back("oauth_token=" + format::encode( token.c_str(), curl ) );
+	extraParameters.push_back("status=" + format::encode( status.c_str(), curl ) );
+	
+	key = consumerSecret + "&" + tokenString;
+	
+	if ( signatureMethod == "HMAC-SHA1") {
+		signatureBaseString = getSignatureBaseString( getBaseString( extraParameters ) );
+		signature = format::encrypt(signatureBaseString.c_str(), key.c_str());
+	} else {
+		signature = key;
+	}
+	
+	basicHeader.push_back("oauth_consumer_key=\"" + format::encode( consumerKey.c_str(), curl ) +"\", ");
+	basicHeader.push_back("oauth_nonce=\"" + format::encode( noonce.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_signature=\"" + format::encode( signature.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_signature_method=\"" + format::encode( signatureMethod.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_timestamp=\"" + format::encode( timeStamp.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_token=\"" + format::encode( token.c_str(), curl ) + "\", ");	
+	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
+	basicHeader.push_back("status=\"" + format::encode( status.c_str(), curl ) + "\"");
+
 	postData = format::vectorToString(basicHeader);
 	headerData = "Authorization: OAuth " + postData;
 	headers = curl_slist_append(headers, headerData.c_str() );

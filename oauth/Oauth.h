@@ -19,10 +19,12 @@ public:
 	Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string hMethod, std::string authMethod);
 	std::string requestRequestToken(std::string url);
 	std::string requestAccessToken(std::string token , std::string tokenString, std::string pinCode, std::string url);
+	std::string requestResourceToken(std::string token , std::string tokenString, std::string status, std::string url);
+
 private:
 	std::string getTime();
 	std::string getNoonce();
-	std::string getBaseString(std::string token = "", std::string pinCode = "");
+	std::string getBaseString(std::vector <std::string> extraParameters);
 	std::string getSignatureBaseString(std::string baseString);
 	std::string post(std::string postData, struct curl_slist *headers=NULL, std::string url=" "); //request body with a  content-type  of application/x-www-form-urlencoded
 
