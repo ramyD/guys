@@ -56,66 +56,78 @@ std::string Bitly::checkForUrl(std::string fullString){
     std::string stringWithShortenedUrl;
     //std::string urlContains[] = {".com", ".net", ".org", ".co.uk", ".ca", ".tv"};
 
+    //std::cout << "got passed:==== " << fullString << std::endl;
+
+    //find the position of the URL the 1st time
     urlPos = hasUrl(fullString, 0);
     
     while(((size_t)urlPos != std::string::npos)){
-    //std::cout << "checking for " << urlStarts[n] << " in string " << fullString << std::endl;
-   
-    size_t valuePositionBegin = urlPos;
-    size_t valuePositionEnd;
-    
-    valuePositionEnd = fullString.find_first_of(' ', valuePositionBegin);
-    
-	//if the delimeter is not found, assume that the URL is at the end of the string
-	if (valuePositionEnd == std::string::npos){
-        valuePositionEnd = fullString.size();
+        //std::cout << "checking for " << urlStarts[n] << " in string " << fullString << std::endl;
+       
+        size_t valuePositionBegin = urlPos;
+        size_t valuePositionEnd;
+        
+        valuePositionEnd = fullString.find_first_of(' ', valuePositionBegin);
+        
+        //if the delimeter is not found, assume that the URL is at the end of the string
+        if (valuePositionEnd == std::string::npos){
+            valuePositionEnd = fullString.size();
+        }
+
+        std::string shortUrl;
+
+        if(needsExtension)
+            shortUrl =  shorten("http://" + fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+        else
+            shortUrl =  shorten(fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+
+        std::string beforeUrl = fullString.substr(0, valuePositionBegin);
+        std::string afterUrl = fullString.substr(valuePositionEnd, fullString.size()-valuePositionEnd);
+
+        stringWithShortenedUrl = beforeUrl + shortUrl + afterUrl;
+        
+        fullString = stringWithShortenedUrl;
+        
+
+        urlPos = hasUrl(fullString, 0);
     }
-
-    std::string shortUrl;
-
-    if(needsExtension)
-        shortUrl =  shorten("http://" + fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
-    else
-        shortUrl =  shorten(fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
-
-    std::string beforeUrl = fullString.substr(0, valuePositionBegin);
-    std::string afterUrl = fullString.substr(valuePositionEnd, fullString.size()-valuePositionEnd);
-
-    stringWithShortenedUrl = beforeUrl + shortUrl + afterUrl;
     
-    fullString = stringWithShortenedUrl;
-
-    urlPos = hasUrl(fullString, 0);
-    }
-    
-
     return stringWithShortenedUrl;
 
 }
 
 int Bitly::hasUrl(std::string fullString, size_t startPosition){
 
-    size_t urlPos;
+    size_t wwwPos;
+    size_t httpPos;
     std::string urlStarts[2] = {"http://", "www."};
     std::string notUrlStarts[1] = {"http://bit.ly/"};
 
-    //make sure the url is not already shortened
-    urlPos = fullString.find(notUrlStarts[0], startPosition);
+    needsExtension = false;
 
-    if(urlPos == std::string::npos){
-        for (int n=0; n<2; n++){
-            urlPos = fullString.find(urlStarts[n], startPosition);
-            if(urlPos != std::string::npos){
-                if(n == 1 ){//if the url starts with www
-                    needsExtension = true;//to compensate for the length of http://
-                }
-                break;
-            }
-        }
-    }else{
-        return hasUrl(fullString, urlPos+1);
+    httpPos = fullString.find(urlStarts[0], startPosition);
+    wwwPos = fullString.find(urlStarts[1], startPosition);
+
+    if(fullString.find(notUrlStarts[0], startPosition) != std::string::npos){
+        return hasUrl(fullString, httpPos+1);
     }
-    return (int)urlPos;
+
+    if(wwwPos != std::string::npos && httpPos != std::string::npos){//found both in the same URL
+        if((int)wwwPos - (int)httpPos == (int)urlStarts[0].length()){
+            return httpPos;
+        }
+    }
+
+    if(wwwPos != std::string::npos){
+        needsExtension = true;
+        return wwwPos;
+    }
+
+    if(httpPos != std::string::npos){
+        return httpPos;
+    }
+
+    return (int)std::string::npos;
 }
 
 std::string Bitly::shorten(std::string uri){
