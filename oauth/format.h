@@ -22,7 +22,7 @@
 
 class format {
 public:
-	static std::string encode(std::string stringToEncode, CURL *curl); //only encode reserved set, encoding must be in all caps
+	static std::string encode(std::string stringToEncode, CURL *curl); //only encodes reserved set, encoding done in all caps
 	static std::vector <std::string> sortVector(std::vector <std::string> vectorToSort, char tailCharacter);
 	static std::string vectorToString(std::vector <std::string> stringToPrint);
 	static std::string encrypt(std::string inputText, std::string inputKey);
