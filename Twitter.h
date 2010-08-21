@@ -4,6 +4,7 @@
 #include <string>
 #include <curl/curl.h>
 #include "tinyxml.h"
+#include "Bitly.h"
 
 class Twitter{
 public:

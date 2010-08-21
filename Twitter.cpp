@@ -32,6 +32,9 @@ static int twitterWriter(char *data, size_t size, size_t nmemb, std::string *buf
 }
 
 void Twitter::post(std::string message){
+
+	Bitly *bitly = new Bitly;
+
 	if (message.size() <= 0) { //if there is no quick post
 		std::cout << "**your Post: ";
 		getline (std::cin, message);
@@ -39,6 +42,8 @@ void Twitter::post(std::string message){
 		std::cout << "**your Post: " << message << std::endl;
 	}
 	
+    message = bitly->checkForUrl(message);
+
 	std::string		prependPost;
 	std::string		statusUpdate;
 

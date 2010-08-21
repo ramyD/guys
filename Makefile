@@ -9,7 +9,7 @@
 CXXFLAGS=-Wall -std=c++98 -pedantic -Os
 
 guys: tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp Guys.cpp Facebook.cpp Twitter.cpp guys0_07.cpp
-	g++ $(LDFLAGS) tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp Guys.cpp Facebook.cpp Twitter.cpp guys0_07.cpp -lcurl -o guys
+	g++ $(LDFLAGS) tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp Guys.cpp Facebook.cpp Twitter.cpp Bitly.cpp guys0_07.cpp -lcurl -o guys
 
 #can't get it to work. Oh well!
 #guys: tinyxml.o guys.o
