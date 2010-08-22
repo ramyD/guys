@@ -67,13 +67,17 @@ std::string format::vectorToString(std::vector <std::string> stringToPrint) {
 }
 
 std::string format::encrypt(std::string inputText, std::string inputKey) {
-	//inputText = "GET&http%3A%2F%2Fterm.ie%2Foauth%2Fexample%2Frequest_token.php&oauth_callback%3Doob%26oauth_consumer_key%3Dkey%26oauth_nonce%3D41GKFQTwZbxLaBOe6qkywsHcZMf%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1274944367%26oauth_version%3D1.0";
+	//inputText = "POST&http%3A%2F%2Fapi.twitter.com%2F1%2Fstatuses%2Fupdate.json&oauth_consumer_key%3DOe8TiUN5SlfY2mRGKiRlxw%26oauth_nonce%3D70DCbXcB40bdQ8nKOojLDGE8tc8ej%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1282428082%26oauth_token%3D25654146-M6Pnr35Ju6F1u34W2RoUITEnJTO0eM4XOnSI6Ng4d%26oauth_version%3D1.0%26status%3Dtest";
+
+	//inputKey = "A4iyWCQL5oR2ArYNYHmJ7THZH2BOmdHGEv6XsUOKI&q12345678901234567890123";
+
+	std::cout << "encryption keys: " << inputKey  << std::endl;
 	std::cout << "encrypting this string: " << inputText << std::endl;
 	
 	byte *key = (byte*)inputKey.c_str(); //initializing key
 	byte digest [ CryptoPP::HMAC<CryptoPP::SHA1>::DIGESTSIZE ]; //initlizing digest length
 
-	CryptoPP::HMAC<CryptoPP::SHA1> hmac( key, inputKey.size()+1 ); //use the key
+	CryptoPP::HMAC<CryptoPP::SHA1> hmac( key, inputKey.size() ); //use the key
 	hmac.Update( (byte*)inputText.c_str(), inputText.size() ); //use the text
 	hmac.Final( digest ); //fill the digest with the encrypted values
 
@@ -88,6 +92,8 @@ std::string format::encrypt(std::string inputText, std::string inputKey) {
 	base64.Get( encodedValues, size ); //filling the variable with the encoded values
 	std::string encodedString = (char*)encodedValues;
 	encodedString.at(size) = '\0'; //giving the string a proper \0 ending
+
+	std::cout << "encrption result: " << encodedString << std::endl;
 
 	return encodedString;
 }

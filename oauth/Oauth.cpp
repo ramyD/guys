@@ -123,12 +123,13 @@ std::string Oauth::requestRequestToken(std::string url) {
 	basicHeader.push_back("oauth_timestamp=\"" + format::encode( timeStamp.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	
-	postData = format::vectorToString(basicHeader);
-	headerData = "Authorization: OAuth " + postData;
+	//postData = format::vectorToString(basicHeader);
+    postData = "";
+	headerData = "Authorization: OAuth " + format::vectorToString(basicHeader);
 	headers = curl_slist_append(headers, headerData.c_str() );
 	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
 	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
-	postData = format::replaceInString(postData, ", ", "&");
+	//postData = format::replaceInString(postData, ", ", "&");
 	
 	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
 	std::cout << "post data: " << postData << std::endl << std::endl;
@@ -180,12 +181,13 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 	basicHeader.push_back("oauth_verifier=\"" + format::encode( pinCode.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	
-	postData = format::vectorToString(basicHeader);
-	headerData = "Authorization: OAuth " + postData;
+	//postData = format::vectorToString(basicHeader);
+    postData = "";
+	headerData = "Authorization: OAuth " + format::vectorToString(basicHeader);
 	headers = curl_slist_append(headers, headerData.c_str() );
 	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
 	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
-	postData = format::replaceInString(postData, ", ", "&");
+	//postData = format::replaceInString(postData, ", ", "&");
 	
 	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
 	std::cout << "post data: " << postData << std::endl << std::endl;
@@ -196,8 +198,9 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 	std::cout << "restricted data permission: " << postReturn << std::endl;
 	
 	return postReturn;
-	/*
+	
 	//verify call back function 
+	/*
 	if ( ( postReturn.find("oauth_token=") != std::string::npos ) && ( postReturn.find("&oauth_token_secret=") != std::string::npos ) ) {
 		return postReturn;
 	} else {
@@ -234,21 +237,21 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 		signature = key;
 	}
 	
-	basicHeader.push_back("oauth_consumer_key=\"" + format::encode( consumerKey.c_str(), curl ) +"\", ");
 	basicHeader.push_back("oauth_nonce=\"" + format::encode( noonce.c_str(), curl ) + "\", ");
-	basicHeader.push_back("oauth_signature=\"" + format::encode( signature.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_signature_method=\"" + format::encode( signatureMethod.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_timestamp=\"" + format::encode( timeStamp.c_str(), curl ) + "\", ");
+	basicHeader.push_back("oauth_consumer_key=\"" + format::encode( consumerKey.c_str(), curl ) +"\", ");
 	basicHeader.push_back("oauth_token=\"" + format::encode( token.c_str(), curl ) + "\", ");	
+	basicHeader.push_back("oauth_signature=\"" + format::encode( signature.c_str(), curl ) + "\", ");
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
-	basicHeader.push_back("status=\"" + format::encode( status.c_str(), curl ) + "\"");
+	//basicHeader.push_back("status=\"" + format::encode( status.c_str(), curl ) + "\"");
 
-	postData = format::vectorToString(basicHeader);
-	headerData = "Authorization: OAuth " + postData;
+    postData = "status=" + format::encode( status.c_str(), curl );
+	headerData = "Authorization: OAuth " + format::vectorToString(basicHeader);
 	headers = curl_slist_append(headers, headerData.c_str() );
 	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
-	headers = curl_slist_append(headers, "Content-Type: text/html; charset=utf-8" );
-	postData = format::replaceInString(postData, ", ", "&");
+	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded; charset=utf-8" );
+	//postData = format::replaceInString(postData, ", ", "&");
 	
 	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
 	std::cout << "post data: " << postData << std::endl << std::endl;
@@ -259,8 +262,9 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 	std::cout << "restricted data permission: " << postReturn << std::endl;
 	
 	return postReturn;
-	/*
+	
 	//verify call back function 
+	/*
 	if ( ( postReturn.find("oauth_token=") != std::string::npos ) && ( postReturn.find("&oauth_token_secret=") != std::string::npos ) ) {
 		return postReturn;
 	} else {
@@ -276,13 +280,13 @@ std::string Oauth::post(std::string postData, struct curl_slist *headers, std::s
 	std::string curlHeaderBuffer;
 	
 	///*debug and verbose instructions*/
-	/*
+	
 	struct data config;
 	config.trace_ascii = 1; //enable ascii tracing
 	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, format::my_trace);
 	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); //the DEBUGFUNCTION has no effect until we enable VERBOSE
-	*/
+	
 	
 	///*callback function instructions*/
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, format::writer);
@@ -305,7 +309,7 @@ std::string Oauth::post(std::string postData, struct curl_slist *headers, std::s
 	} else if (httpMethod == "POST") {
 		///*post request*/
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str() );
 	}
 	
 	///*send the request*/
