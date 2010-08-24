@@ -15,6 +15,12 @@ public:
 	int displayHelp();
 	int displayVersion();
 
+	bool folderExists(string path);
+	bool configFileExists(string path);
+	void makeConfigFile(string fileName);
+	void makeConfigDir(string folderName);
+	void configureCheck();
+
 private:
 	float versionNumber;
 };

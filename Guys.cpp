@@ -4,6 +4,169 @@ Guys::Guys() {
 	versionNumber = 0.07; //quick way to edit version number
 }
 
+bool Guys::folderExists(string path) {
+	FILE *pFile;
+	char buffer [100];
+	std::string result;
+	std::string command = "cd " + path + " && pwd";
+
+	pFile = popen(command.c_str(), "r");
+	
+	if (pFile == NULL) {
+		std::cout << "handle error" << std::endl;
+		return false;
+	} else {
+		while ( !feof(pFile) ) {
+			fgets (buffer , 100 , pFile);
+		}
+		pclose (pFile);
+	}
+	result = buffer;
+	
+	if ( result.length() == 6 ) {
+		return false; //means the command returned junk data and is not working
+	} else {
+		size_t found;
+		found = result.find(path.substr(2)); //substr(2) specifically for ~/ in path finding, either way it would still resolve for an absolute path (right?)
+		if (found!=string::npos) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+bool Guys::configFileExists(string path) {
+	FILE *pFile;
+	char buffer [100];
+	std::string result;
+	std::string command = "cd ~/ && pwd";
+	std::string file;
+
+	pFile = popen(command.c_str(), "r");
+	
+	if (pFile == NULL) {
+		std::cout << "handle error" << std::endl;
+		return false;
+	} else {
+		while ( !feof(pFile) ) {
+			fgets (buffer , 100 , pFile);
+		}
+		pclose (pFile);
+	}
+	result = buffer;
+	file = result + "/.config/" + path;
+	
+	std::string::iterator it;
+	for ( it=file.begin() ; it < file.end(); it++ )
+		if (*it == 10) file.erase(it); //erase return characters
+	
+	pFile = fopen (file.c_str() , "r");
+	if (pFile == NULL) {
+		cout << "config file does not exist" << endl;
+		return false;
+	} else {
+		//do things to the file?
+		fclose(pFile); //clos file
+		return true;
+	}
+	
+	return false;
+}
+
+void Guys::makeConfigFile(string fileName) {
+	FILE *pFile;
+	char buffer [100];
+	std::string result;
+	std::string command = "cd ~/ && pwd";
+	std::string file;
+
+	pFile = popen(command.c_str(), "r");
+	
+	if (pFile == NULL) {
+		std::cout << "handle error" << std::endl;
+		return;
+	} else {
+		while ( !feof(pFile) ) {
+			fgets (buffer , 100 , pFile);
+		}
+		pclose (pFile);
+	}
+	result = buffer;
+	file = result + "/.config/" + fileName;
+	
+	string::iterator it;
+	for ( it=file.begin() ; it < file.end(); it++ )
+		if (*it == 10) file.erase(it); //erase return characters
+	
+	pFile = fopen (file.c_str() , "w");
+	if (pFile == NULL) {
+		std::cout << "file creation error" << std::endl;
+		return;
+	} else {
+		//do things to the file?
+		fclose(pFile); //close file
+		return;
+	}
+	
+	return;
+}
+
+void Guys::makeConfigDir(string folderName) {
+	FILE *pFile;
+	char buffer [100];
+	std::string result;
+	std::string command = "cd ~/ && pwd";
+	std::string file;
+
+	pFile = popen(command.c_str(), "r");
+	
+	if (pFile == NULL) {
+		std::cout << "handle error" << std::endl;
+		return;
+	} else {
+		while ( !feof(pFile) ) {
+			fgets (buffer , 100 , pFile);
+		}
+		pclose (pFile);
+	}
+	result = buffer;
+	file = result + "/.config/" + folderName;
+	command = "mkdir " + file;
+	
+	std::string::iterator it;
+	for ( it=command.begin() ; it < command.end(); it++ )
+		if (*it == 10) command.erase(it); //erase return characters
+	
+	pFile = popen (command.c_str() , "r");
+	if (pFile == NULL) {
+		std::cout << "process creation error" << std::endl;
+		return;
+	} else {
+		pclose(pFile); //close file
+		return;
+	}
+	
+	return;
+}
+
+
+void Guys::checkConfigFiles() {
+	if( configFileExists("guys/twitter") ) {
+		std::cout << "file exists" << std::endl;
+		///TODO operate on file
+	} else {
+		if( folderExists("~/.config/guys") ) {
+			std::cout << "folder does exist!" << std::endl; //but not the file
+			makeConfigFile("guys/twitter"); //create the file
+			configureCheck();
+		} else {
+			makeConfigDir("guys");
+			configureCheck();
+		}
+	 }
+}
+
 int Guys::interpretArguments(int argc, char* argv[]) {
 	if (argc < 2) { //if no arguments
 		displayHelp();
