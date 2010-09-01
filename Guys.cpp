@@ -4,9 +4,9 @@ Guys::Guys() {
 	versionNumber = 0.07; //quick way to edit version number
 }
 
-bool Guys::folderExists(string path) {
+bool Guys::folderExists(std::string path) {
 	FILE *pFile;
-	char buffer [100];
+	char buffer [256];
 	std::string result;
 	std::string command = "cd " + path + " && pwd";
 
@@ -17,7 +17,7 @@ bool Guys::folderExists(string path) {
 		return false;
 	} else {
 		while ( !feof(pFile) ) {
-			fgets (buffer , 100 , pFile);
+			fgets (buffer, 256, pFile);
 		}
 		pclose (pFile);
 	}
@@ -28,7 +28,7 @@ bool Guys::folderExists(string path) {
 	} else {
 		size_t found;
 		found = result.find(path.substr(2)); //substr(2) specifically for ~/ in path finding, either way it would still resolve for an absolute path (right?)
-		if (found!=string::npos) {
+		if (found!=std::string::npos) {
 			return true;
 		}
 	}
@@ -36,9 +36,9 @@ bool Guys::folderExists(string path) {
 	return false;
 }
 
-bool Guys::configFileExists(string path) {
+bool Guys::configFileExists(std::string path) {
 	FILE *pFile;
-	char buffer [100];
+	char buffer [256];
 	std::string result;
 	std::string command = "cd ~/ && pwd";
 	std::string file;
@@ -50,7 +50,7 @@ bool Guys::configFileExists(string path) {
 		return false;
 	} else {
 		while ( !feof(pFile) ) {
-			fgets (buffer , 100 , pFile);
+			fgets (buffer, 256, pFile);
 		}
 		pclose (pFile);
 	}
@@ -63,7 +63,7 @@ bool Guys::configFileExists(string path) {
 	
 	pFile = fopen (file.c_str() , "r");
 	if (pFile == NULL) {
-		cout << "config file does not exist" << endl;
+		std::cout << "config file does not exist" << std::endl;
 		return false;
 	} else {
 		//do things to the file?
@@ -74,9 +74,9 @@ bool Guys::configFileExists(string path) {
 	return false;
 }
 
-void Guys::makeConfigFile(string fileName) {
+void Guys::makeConfigFile(std::string fileName) {
 	FILE *pFile;
-	char buffer [100];
+	char buffer [256];
 	std::string result;
 	std::string command = "cd ~/ && pwd";
 	std::string file;
@@ -88,14 +88,16 @@ void Guys::makeConfigFile(string fileName) {
 		return;
 	} else {
 		while ( !feof(pFile) ) {
-			fgets (buffer , 100 , pFile);
+			fgets (buffer, 256, pFile);
 		}
 		pclose (pFile);
 	}
 	result = buffer;
 	file = result + "/.config/" + fileName;
 	
-	string::iterator it;
+	configPath = result + "/.config/guys/"; //accessible to all functions
+	
+	std::string::iterator it;
 	for ( it=file.begin() ; it < file.end(); it++ )
 		if (*it == 10) file.erase(it); //erase return characters
 	
@@ -112,9 +114,9 @@ void Guys::makeConfigFile(string fileName) {
 	return;
 }
 
-void Guys::makeConfigDir(string folderName) {
+void Guys::makeConfigDir(std::string folderName) {
 	FILE *pFile;
-	char buffer [100];
+	char buffer [256];
 	std::string result;
 	std::string command = "cd ~/ && pwd";
 	std::string file;
@@ -126,7 +128,7 @@ void Guys::makeConfigDir(string folderName) {
 		return;
 	} else {
 		while ( !feof(pFile) ) {
-			fgets (buffer , 100 , pFile);
+			fgets (buffer, 256, pFile);
 		}
 		pclose (pFile);
 	}
@@ -151,20 +153,46 @@ void Guys::makeConfigDir(string folderName) {
 }
 
 
-void Guys::checkConfigFiles() {
+void Guys::configurationFileCheck() {
 	if( configFileExists("guys/twitter") ) {
 		std::cout << "file exists" << std::endl;
-		///TODO operate on file
+		
+		FILE *pFile;
+		char buffer [100];
+		std::string result;
+		std::string command = "cd ~/ && pwd";
+		std::string file;
+
+		pFile = popen(command.c_str(), "r");
+		
+		if (pFile == NULL) {
+			std::cout << "handle error" << std::endl;
+			return;
+		} else {
+			while ( !feof(pFile) ) {
+				fgets (buffer , 100 , pFile);
+			}
+			pclose (pFile);
+		}
+		result = buffer;
+		configPath = result + "/.config/guys/"; //accessible to all functions
+		
+		std::string::iterator it;
+		for ( it=configPath.begin() ; it < configPath.end(); it++ )
+			if (*it == 10) configPath.erase(it); //erase return characters
+		
 	} else {
 		if( folderExists("~/.config/guys") ) {
 			std::cout << "folder does exist!" << std::endl; //but not the file
 			makeConfigFile("guys/twitter"); //create the file
-			configureCheck();
+			configurationFileCheck();
 		} else {
 			makeConfigDir("guys");
-			configureCheck();
+			configurationFileCheck();
 		}
-	 }
+	}
+	
+	return;
 }
 
 int Guys::interpretArguments(int argc, char* argv[]) {
@@ -208,7 +236,7 @@ int Guys::interpretArguments(int argc, char* argv[]) {
 			}
 			quickPost << arguments[argc-1]; //we do this make sure the last input into the stream doesn't have a space at the end that takes up 1 character for nothing!
 		}
-		twitter->post(quickPost.str());
+		twitter->post(quickPost.str(), configPath);
 	}
 
 	if (arguments[1] == "-f" || arguments[1] == "--facebook") {

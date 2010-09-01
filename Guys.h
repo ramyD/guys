@@ -15,11 +15,14 @@ public:
 	int displayHelp();
 	int displayVersion();
 
-	bool folderExists(string path);
-	bool configFileExists(string path);
-	void makeConfigFile(string fileName);
-	void makeConfigDir(string folderName);
-	void configureCheck();
+	bool folderExists(std::string path);
+	bool configFileExists(std::string path);
+	void makeConfigFile(std::string fileName);
+	void makeConfigDir(std::string folderName);
+	void configurationFileCheck();
+	void readFile();
+	void generateKey();
+	std::string configPath;
 
 private:
 	float versionNumber;

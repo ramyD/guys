@@ -22,6 +22,7 @@
 
 int main(int argc, char* argv[]){
 	Guys *guys = new Guys;
+	guys->configurationFileCheck();
 	guys->interpretArguments(argc, argv); //interprets and acts on all arguments
 	return 0;
 }

@@ -257,10 +257,7 @@ int main(int argc, char** argv) {
 	//status = "this is my first Oauth post";
 	resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, status, "http://api.twitter.com/1/statuses/update.json");
 
-  std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
+	std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
 
-
-
-	
 	return 0;
 }

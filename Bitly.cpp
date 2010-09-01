@@ -61,36 +61,42 @@ std::string Bitly::checkForUrl(std::string fullString){
     //find the position of the URL the 1st time
     urlPos = hasUrl(fullString, 0);
     
-    while(((size_t)urlPos != std::string::npos)){
-        //std::cout << "checking for " << urlStarts[n] << " in string " << fullString << std::endl;
-       
-        size_t valuePositionBegin = urlPos;
-        size_t valuePositionEnd;
-        
-        valuePositionEnd = fullString.find_first_of(' ', valuePositionBegin);
-        
-        //if the delimeter is not found, assume that the URL is at the end of the string
-        if (valuePositionEnd == std::string::npos){
-            valuePositionEnd = fullString.size();
-        }
+    std::cout << "message inside bitly: " << urlPos << std::endl;
+    
+    if ( urlPos == -1 ) {
+		return fullString;
+	}
+	
+	while(((size_t)urlPos != std::string::npos)){
+		//std::cout << "checking for " << urlStarts[n] << " in string " << fullString << std::endl;
+	   
+		size_t valuePositionBegin = urlPos;
+		size_t valuePositionEnd;
+		
+		valuePositionEnd = fullString.find_first_of(' ', valuePositionBegin);
+		
+		//if the delimeter is not found, assume that the URL is at the end of the string
+		if (valuePositionEnd == std::string::npos){
+			valuePositionEnd = fullString.size();
+		}
 
-        std::string shortUrl;
+		std::string shortUrl;
 
-        if(needsExtension)
-            shortUrl =  shorten("http://" + fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
-        else
-            shortUrl =  shorten(fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+		if(needsExtension)
+			shortUrl =  shorten("http://" + fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
+		else
+			shortUrl =  shorten(fullString.substr(valuePositionBegin, valuePositionEnd-valuePositionBegin));
 
-        std::string beforeUrl = fullString.substr(0, valuePositionBegin);
-        std::string afterUrl = fullString.substr(valuePositionEnd, fullString.size()-valuePositionEnd);
+		std::string beforeUrl = fullString.substr(0, valuePositionBegin);
+		std::string afterUrl = fullString.substr(valuePositionEnd, fullString.size()-valuePositionEnd);
 
-        stringWithShortenedUrl = beforeUrl + shortUrl + afterUrl;
-        
-        fullString = stringWithShortenedUrl;
-        
+		stringWithShortenedUrl = beforeUrl + shortUrl + afterUrl;
+		
+		fullString = stringWithShortenedUrl;
+		
 
-        urlPos = hasUrl(fullString, 0);
-    }
+		urlPos = hasUrl(fullString, 0);
+	}
     
     return stringWithShortenedUrl;
 
