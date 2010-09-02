@@ -272,7 +272,7 @@ int Guys::interpretArguments(int argc, char* argv[]) {
 
 	if (arguments[1] == "-g" || arguments[1] == "--twitter-get") {
 		Twitter *twitter = new Twitter;
-		twitter->getTimeline();
+		twitter->getTimeline(configPath);
 	}
 
 	return 0;

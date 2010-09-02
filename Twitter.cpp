@@ -354,7 +354,7 @@ void Twitter::post(std::string message, std::string configFilePath){
 		writeFile();
 		readFile(&token, &tokenSecret);
 		
-		resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, message, "http://api.twitter.com/1/statuses/update.json");
+		resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, "http://api.twitter.com/1/statuses/update.json", "POST","status=", message);
 		std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
 	}
 	
@@ -418,27 +418,22 @@ void Twitter::dump_to_stdout( TiXmlNode * pParent, unsigned int indent){
 }
 
 
-void Twitter::getTimeline(void){
-	CURL *curl;
-	CURLcode twitterResult;
-    URL = "http://twitter.com/statuses/friends_timeline.xml";
+void Twitter::getTimeline(std::string configFilePath){
+	configPath = configFilePath; //move to constructor?
+	
+	std::string token;
+	std::string tokenSecret;
+	std::string resourceTokenString;
 
-    // Now set up all of the curl options
-    curl_easy_setopt(curl, CURLOPT_USERPWD, Account.c_str() );
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Twitter::twitterWriter);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &apiPageBuffer);
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1 );
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    
-    curl_easy_setopt(curl, CURLOPT_URL, URL.c_str());
-    
-    //cout << "sending..." << endl; //unix style coding requires no confirmation for expected behaviours
-    twitterResult = curl_easy_perform(curl);
+	writeFile();
+	readFile(&token, &tokenSecret);
 
-    //std::cout << apiPageBuffer << std::endl; //will print the xml file
-    
+	resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, "http://api.twitter.com/1/statuses/friends_timeline.xml", "GET");
+	std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
+
+
     TiXmlDocument doc("friends_timeline.xml");
-    bool loadOkay = doc.Parse(apiPageBuffer.c_str(), 0, TIXML_ENCODING_UTF8);
+    bool loadOkay = doc.Parse(resourceTokenString.c_str(), 0, TIXML_ENCODING_UTF8);
     
     if (!loadOkay) {
         printf( "Could not load timeline xml. Error='%s'. Exiting.\n", doc.ErrorDesc() );
@@ -462,14 +457,5 @@ void Twitter::getTimeline(void){
                 std::cout << blue << screen_name->GetText() << normal << ": " << text->GetText() << std::endl << "tweeted on: " << created_at->GetText() << std::endl << std::endl;
             }
         }
-    }
-
-    // Did we succeed?
-    if (twitterResult == CURLE_OK){
-        //std::cout << "SUCCESS! message sent to Twitter!" << std::endl; //unix style coding requires no confirmation for expected behaviours
-        return;
-    } else{
-        std::cout << "OUPS! there was an error. The message was not sent to Twitter." << std::endl;
-        return;
     }
 }

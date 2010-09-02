@@ -19,7 +19,7 @@ public:
 	Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string hMethod, std::string authMethod);
 	std::string requestRequestToken(std::string url);
 	std::string requestAccessToken(std::string token , std::string tokenString, std::string pinCode, std::string url);
-	std::string requestResourceToken(std::string token , std::string tokenString, std::string status, std::string url);
+	std::string requestResourceToken(std::string token, std::string tokenString, std::string url,  std::string method = "POST", std::string fieldName = "", std::string fieldData = "");
 
 private:
 	std::string getTime();

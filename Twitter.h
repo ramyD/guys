@@ -10,8 +10,8 @@
 class Twitter{
 public:
 	Twitter();
-	void		post(std::string message, std::string configFilePath);  //posts to twitter using basic auth
-	void		getTimeline(void); //gets the last 20 tweets using basic auth
+	void		post(std::string message, std::string configFilePath);  //posts to twitter using Oauth
+	void		getTimeline(std::string configFilePath); //gets the last 20 tweets using Oauth
 
 private:
 	const char	*getIndent( unsigned int numIndents ); //for the xml from the timeline

@@ -210,7 +210,7 @@ std::string Oauth::requestAccessToken(std::string token, std::string tokenString
 	*/
 }
 
-std::string Oauth::requestResourceToken(std::string token, std::string tokenString, std::string status, std::string url) {
+std::string Oauth::requestResourceToken(std::string token, std::string tokenString, std::string url, std::string method, std::string fieldName, std::string fieldData) {
 	std::vector <std::string> basicHeader;
 	std::vector <std::string> extraParameters;
 	struct curl_slist *headers=NULL;
@@ -226,7 +226,9 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 	requestUrl = url;
 
 	extraParameters.push_back("oauth_token=" + format::encode( token.c_str(), curl ) );
-	extraParameters.push_back("status=" + format::encode( status.c_str(), curl ) );
+	if (fieldName != "") {
+		extraParameters.push_back(fieldName + format::encode( fieldData.c_str(), curl ) );
+	}
 	
 	key = consumerSecret + "&" + tokenString;
 	
@@ -246,18 +248,21 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	//basicHeader.push_back("status=\"" + format::encode( status.c_str(), curl ) + "\"");
 
-    postData = "status=" + format::encode( status.c_str(), curl );
+	httpMethod = method;
+
+	if (fieldName != "") {
+		postData = fieldName + format::encode( fieldData.c_str(), curl );
+	}
+	
 	headerData = "Authorization: OAuth " + format::vectorToString(basicHeader);
 	headers = curl_slist_append(headers, headerData.c_str() );
 	headers = curl_slist_append(headers, "Connection: Keep-Alive" );
 	headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded; charset=utf-8" );
-	//postData = format::replaceInString(postData, ", ", "&");
 	
 	std::cout << std::endl << "header data: " << headerData << std::endl << std::endl;
 	std::cout << "post data: " << postData << std::endl << std::endl;
 	std::cout << "request url: " << requestUrl << std::endl << std::endl << std::endl;
 	
-	//httpMethod = "GET";
 	postReturn = post(postData, headers, requestUrl);
 	std::cout << "restricted data permission: " << postReturn << std::endl;
 	
