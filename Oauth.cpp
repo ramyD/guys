@@ -221,6 +221,8 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 	std::string signature;
 	std::string postReturn;
 	
+	httpMethod = method;
+	
 	timeStamp = getTime();
 	noonce = getNoonce();
 	requestUrl = url;
@@ -248,7 +250,7 @@ std::string Oauth::requestResourceToken(std::string token, std::string tokenStri
 	basicHeader.push_back("oauth_version=\"" + format::encode( oauthVersion.c_str(), curl ) + "\"");
 	//basicHeader.push_back("status=\"" + format::encode( status.c_str(), curl ) + "\"");
 
-	httpMethod = method;
+
 
 	if (fieldName != "") {
 		postData = fieldName + format::encode( fieldData.c_str(), curl );
