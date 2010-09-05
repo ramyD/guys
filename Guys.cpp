@@ -1,7 +1,7 @@
 #include "Guys.h"
 
 Guys::Guys() {
-	versionNumber = 0.9; //quick way to edit version number
+	versionNumber = 1.0; //quick way to edit version number
 }
 
 bool Guys::folderExists(std::string path) {
