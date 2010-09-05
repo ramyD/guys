@@ -61,7 +61,7 @@ std::string Bitly::checkForUrl(std::string fullString){
     //find the position of the URL the 1st time
     urlPos = hasUrl(fullString, 0);
     
-    std::cout << "message inside bitly: " << urlPos << std::endl;
+    //std::cout << "message inside bitly: " << urlPos << std::endl;
     
     if ( urlPos == -1 ) {
 		return fullString;

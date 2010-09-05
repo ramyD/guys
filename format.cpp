@@ -71,8 +71,8 @@ std::string format::encrypt(std::string inputText, std::string inputKey) {
 
 	//inputKey = "A4iyWCQL5oR2ArYNYHmJ7THZH2BOmdHGEv6XsUOKI&q12345678901234567890123";
 
-	std::cout << "encryption keys: " << inputKey  << std::endl;
-	std::cout << "encrypting this string: " << inputText << std::endl;
+	//std::cout << "encryption keys: " << inputKey  << std::endl;
+	//std::cout << "encrypting this string: " << inputText << std::endl;
 	
 	byte *key = (byte*)inputKey.c_str(); //initializing key
 	byte digest [ CryptoPP::HMAC<CryptoPP::SHA1>::DIGESTSIZE ]; //initlizing digest length
@@ -93,7 +93,7 @@ std::string format::encrypt(std::string inputText, std::string inputKey) {
 	std::string encodedString = (char*)encodedValues;
 	encodedString.at(size) = '\0'; //giving the string a proper \0 ending
 
-	std::cout << "encrption result: " << encodedString << std::endl;
+	//std::cout << "encrption result: " << encodedString << std::endl;
 
 	return encodedString;
 }

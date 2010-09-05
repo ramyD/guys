@@ -16,22 +16,21 @@
 
 class Oauth {
 public:
-	Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string hMethod, std::string authMethod);
-	std::string requestRequestToken(std::string url);
-	std::string requestAccessToken(std::string token , std::string tokenString, std::string pinCode, std::string url);
-	std::string requestResourceToken(std::string token, std::string tokenString, std::string url,  std::string method = "POST", std::string fieldName = "", std::string fieldData = "");
+	Oauth(std::string cKey, std::string cSecret, std::string cbURL, std::string authMethod);
+	std::string requestRequestToken(std::string url, std::string method);
+	std::string requestAccessToken(std::string token , std::string tokenSecret, std::string pinCode, std::string url, std::string method);
+	std::string requestResourceToken(std::string token, std::string tokenSecret, std::string url, std::string method, std::string fieldName = "", std::string fieldData = "");
 
 private:
 	std::string getTime();
 	std::string getNoonce();
 	std::string getBaseString(std::vector <std::string> extraParameters);
-	std::string getSignatureBaseString(std::string baseString);
-	std::string post(std::string postData, struct curl_slist *headers=NULL, std::string url=" "); //request body with a  content-type  of application/x-www-form-urlencoded
+	std::string getSignatureBaseString(std::string httpMethod, std::string requestUrl, std::string baseString);
+	std::string generateHeaders(std::string url, std::string method, std::string key, std::vector <std::string> extraParameters, std::vector <std::string> extraHeaders);
+	std::string post(std::string postData, struct curl_slist *headers, std::string url, std::string httpMethod);
 
 	CURL *curl;
 
-	std::string httpMethod;
-	std::string requestUrl;
 	std::string consumerKey;
 	std::string consumerSecret;
 	std::string signatureMethod;

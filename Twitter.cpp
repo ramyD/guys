@@ -6,10 +6,9 @@
 
 Twitter::Twitter() {
 	bitly = new Bitly;
-	myOauth = new Oauth( "Oe8TiUN5SlfY2mRGKiRlxw", 
+	myOauth = new Oauth("Oe8TiUN5SlfY2mRGKiRlxw", 
 						"fA4iyWCQL5oR2ArYNYHmJ7THZH2BOmdHGEv6XsUOKI", 
 						"oob", 
-						"POST", 
 						"HMAC-SHA1");
 	return;
 }
@@ -30,6 +29,7 @@ int Twitter::twitterWriter(char *data, size_t size, size_t nmemb, std::string *b
 
   return result;
 }
+
 
 std::string Twitter::parsePage(std::string token, std::string twitterURL, std::string *resultUrl) {
 	CURL *curl;
@@ -52,6 +52,7 @@ std::string Twitter::parsePage(std::string token, std::string twitterURL, std::s
 	return twitterPageBuffer;
 }
 
+
 std::string Twitter::getTwitterFormAction(std::string *twitterLoginPage) {
 	//std::cout << "<<< getting twitter form action" << std::endl;
 	std::string tagForm = "<form action=\"";
@@ -65,6 +66,7 @@ std::string Twitter::getTwitterFormAction(std::string *twitterLoginPage) {
 	return twitterLoginPage->substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction
 }
 
+
 std::string Twitter::getTwitterAuthenticityToken(std::string *twitterLoginPage) {
 	//std::cout << "<<< getting twitter authenticity token" << std::endl;
 	std::string tagInput = "<input name=\"authenticity_token\" type=\"hidden\" value=\"";
@@ -77,6 +79,7 @@ std::string Twitter::getTwitterAuthenticityToken(std::string *twitterLoginPage) 
 	
 	return twitterLoginPage->substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction;
 }
+
 
 std::string Twitter::getPassword() {
 	char passwordChar;
@@ -98,6 +101,7 @@ std::string Twitter::getPassword() {
 	return passwordStream.str();
 }
 
+
 std::string Twitter::getCode(std::string postData, std::string postUrl, std::string refererUrl) {
 	//std::cout << "<<< getting pin code from " << postUrl << std::endl;
 	CURL *curl;
@@ -113,7 +117,7 @@ std::string Twitter::getCode(std::string postData, std::string postUrl, std::str
 	strncpy( postCharData, postData.c_str(), postData.length()-1 );
 	postCharData[postData.length()-1] = '\0';
 	postCharData[postData.length()] = '\0';
-	std::cout << "<<< post character data is: " << postCharData << std::endl;
+	//std::cout << "<<< post character data is: " << postCharData << std::endl;
 
 /*
 	///debug and verbose instructions
@@ -139,6 +143,7 @@ std::string Twitter::getCode(std::string postData, std::string postUrl, std::str
 	return twitterPageBuffer;
 }
 
+
 std::string Twitter::getPinNumber(std::string *twitterCodePage) {
 	std::cout << "<<< parsing for twitter pin" << std::endl;
 	std::string tagInput = "<div id=\"oauth_pin\">";
@@ -152,16 +157,18 @@ std::string Twitter::getPinNumber(std::string *twitterCodePage) {
 	return twitterCodePage->substr(tagBegin, tagEnd - tagBegin); //substring take the first parameter as a position (count from 0) and a length (count from 1) which requires substraction;
 }
 
+
 std::string Twitter::cleanPinResult(std::string pinNumber) {
-    std::string numStorage;
-    std::string::iterator it;
+	std::string numStorage;
+	std::string::iterator it;
 
-    for (it=pinNumber.begin(); it < pinNumber.end(); ++it) {
-        if( *it >= 48 && *it <= 57) numStorage += *it;
-    }
+	for (it=pinNumber.begin(); it < pinNumber.end(); ++it) {
+		if( *it >= 48 && *it <= 57) numStorage += *it;
+	}
 
-    return numStorage;
+	return numStorage;
 }
+
 
 std::string Twitter::hackTwitter(std::string token) {
 	std::string twitterLoginPage;
@@ -188,34 +195,35 @@ std::string Twitter::hackTwitter(std::string token) {
 	
 	formAction = getTwitterFormAction(&twitterLoginPage);
 	
-	std::cout << "form action is: " << formAction << std::endl;
+	//std::cout << "form action is: " << formAction << std::endl;
 	
 	authenticityToken = getTwitterAuthenticityToken(&twitterLoginPage);
 	password = getPassword();
 	
 	postData = postAuthenticityToken + '=' + authenticityToken + '&' + postOauthToken + '=' + token + '&' + postSessionEmailUser + '=' + UserName + '&' + postSessionPassword + '=' + password;
 
-	std::cout << "<<< post Data length: " << postData.length() << std::endl;
-	std::cout << "post data 2 length is : " << strlen(postData.c_str() ) << std::endl;	
+	//std::cout << "<<< post Data length: " << postData.length() << std::endl;
+	//std::cout << "post data 2 length is : " << strlen(postData.c_str() ) << std::endl;	
 
 	//postDataHeader = "Content-Type: application/x-www-form-urlencode\nContent-Length: ";
 	//postDataLength << postData.length() -1;
 
 	//postData = postDataHeader + postDataLength.str() + "\n\n" + postData;
 	
-	std::cout << "post data is: " << postData << std::endl;
+	//std::cout << "post data is: " << postData << std::endl;
 
 
 	twitterPinPage = getCode(postData, formAction, twitterAuthorizationUrl);
 	twitterPinNumber = getPinNumber(&twitterPinPage);
-    twitterPinNumber = cleanPinResult(twitterPinNumber);
+	twitterPinNumber = cleanPinResult(twitterPinNumber);
 
-    return twitterPinNumber;
+	return twitterPinNumber;
 }
+
 
 void Twitter::promptUsername() {
 	std::string filePath = configPath + "twitter";
-	std::cout << "Enter your twitter username (not email): ";
+	std::cout << "Enter your twitter username or email: ";
 	getline (std::cin, UserName);
 	
 	std::ofstream myfile;
@@ -226,6 +234,7 @@ void Twitter::promptUsername() {
 	return;
 }
 
+
 void Twitter::generateAccessToken() {
 	std::string requestTokenString;
 	std::string accessTokenString;
@@ -233,13 +242,13 @@ void Twitter::generateAccessToken() {
 	std::string tokenSecret;
 	std::string pinCode;
 	
-	requestTokenString = myOauth->requestRequestToken("https://api.twitter.com/oauth/request_token");
+	requestTokenString = myOauth->requestRequestToken("https://api.twitter.com/oauth/request_token", "POST");
 	token = format::extract("oauth_token", '&', requestTokenString); //this method should pass by reference, not by value
 	tokenSecret = format::extract("oauth_token_secret", '&', requestTokenString);
 	
 	pinCode = hackTwitter(token);
 	
-	accessTokenString = myOauth->requestAccessToken(token, tokenSecret, pinCode, "https://api.twitter.com/oauth/access_token");
+	accessTokenString = myOauth->requestAccessToken(token, tokenSecret, pinCode, "https://api.twitter.com/oauth/access_token", "POST");
 	
 	token = format::extract("oauth_token", '&', accessTokenString);
 	tokenSecret = format::extract("oauth_token_secret", '&', accessTokenString);
@@ -247,7 +256,6 @@ void Twitter::generateAccessToken() {
 	std::string line;
 	std::ifstream myifile;
 	std::string filePath = configPath + "twitter";
-	//cout << configPath << endl;
 	
 	myifile.open(filePath.c_str() );
 	if (myifile.is_open()) {
@@ -266,11 +274,11 @@ void Twitter::generateAccessToken() {
 	return;
 }
 
+
 void Twitter::writeFile() {
 	std::string line[3];
 	std::ifstream myfile;
 	std::string filePath = configPath + "twitter";
-	//cout << configPath << endl;
 	
 	myfile.open(filePath.c_str() );
 	if (myfile.is_open()) {
@@ -284,13 +292,11 @@ void Twitter::writeFile() {
 		if (line[0] == "") {
 			//std::cout << "file has no username" << std::endl;
 			promptUsername();
-			//readFile(token, tokenSecret);
 		}
 		
 		if (line[1] == "" || line[2] == "") {
 			//std::cout << "file has no access token" << std::endl;
 			generateAccessToken();
-			//readFile(token, tokenSecret);
 		}
 		
 	} else std::cout << "Unable to open file" << std::endl;
@@ -298,11 +304,11 @@ void Twitter::writeFile() {
 	return;
 }
 
+
 void Twitter::readFile(std::string *token, std::string *tokenSecret) {
 	std::string line[3];
 	std::ifstream myfile;
 	std::string filePath = configPath + "twitter";
-	//cout << configPath << endl;
 	
 	myfile.open(filePath.c_str() );
 	if (myfile.is_open()) {
@@ -318,10 +324,10 @@ void Twitter::readFile(std::string *token, std::string *tokenSecret) {
 		UserName =  line[0];
 		*token = line[1];
 		*tokenSecret = line[2];
-		
-		std::cout << "UserName: " << UserName << " token: " << &token << " tokenSecret: " << &tokenSecret << std::endl;
+		//std::cout << "UserName: " << UserName << " token: " << &token << " tokenSecret: " << &tokenSecret << std::endl;
 	}
 }
+
 
 void Twitter::post(std::string message, std::string configFilePath){
 
@@ -334,12 +340,8 @@ void Twitter::post(std::string message, std::string configFilePath){
 		std::cout << "**your Post: " << message << std::endl;
 	}
 	
-	std::cout << "message before bitly: " << message << std::endl;
-	
 	message = bitly->checkForUrl(message);
 	
-	std::cout << "message after bitly: " << message << std::endl;
-
 	if (message.length() > 140){
 		if ( (message.length() - 140) < 2){
 			std::cout << "OUPS! message is 1 character above the 140 character limit" << std::endl;
@@ -355,7 +357,6 @@ void Twitter::post(std::string message, std::string configFilePath){
 		readFile(&token, &tokenSecret);
 		
 		resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, "http://api.twitter.com/1/statuses/update.json", "POST","status=", message);
-		std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
 	}
 	
 	return;
@@ -363,58 +364,58 @@ void Twitter::post(std::string message, std::string configFilePath){
 
 
 const char * Twitter::getIndent( unsigned int numIndents ) { // a utility function defining a very simple method to indent a line of text
-    static const char * pINDENT = "                                      + ";
-    static const unsigned int LENGTH = strlen( pINDENT );
+	static const char * pINDENT = "                                      + ";
+	static const unsigned int LENGTH = strlen( pINDENT );
 
-    if ( numIndents > LENGTH ) numIndents = LENGTH;
+	if ( numIndents > LENGTH ) numIndents = LENGTH;
 
-    return &pINDENT[ LENGTH-numIndents ];
+	return &pINDENT[ LENGTH-numIndents ];
 }
 
 
 void Twitter::dump_to_stdout( TiXmlNode * pParent, unsigned int indent){
-    if ( !pParent ) return;
+	if ( !pParent ) return;
 
-    TiXmlText *pText;
-    int t = pParent->Type();
-    printf( "%s", getIndent( indent));
+	TiXmlText *pText;
+	int t = pParent->Type();
+	printf( "%s", getIndent( indent));
 
-    switch ( t ) {
-    case TiXmlNode::DOCUMENT:
-        printf( "Document" );
-        break;
+	switch ( t ) {
+	case TiXmlNode::DOCUMENT:
+		printf( "Document" );
+		break;
 
-    case TiXmlNode::ELEMENT:
-        printf( "Element \"%s\"", pParent->Value() );
-        break;
+	case TiXmlNode::ELEMENT:
+		printf( "Element \"%s\"", pParent->Value() );
+		break;
 
-    case TiXmlNode::COMMENT:
-        printf( "Comment: \"%s\"", pParent->Value());
-        break;
+	case TiXmlNode::COMMENT:
+		printf( "Comment: \"%s\"", pParent->Value());
+		break;
 
-    case TiXmlNode::UNKNOWN:
-        printf( "Unknown" );
-        break;
+	case TiXmlNode::UNKNOWN:
+		printf( "Unknown" );
+		break;
 
-    case TiXmlNode::TEXT:
-        pText = pParent->ToText();
-        printf( "Text: [%s]", pText->Value() );
-        break;
+	case TiXmlNode::TEXT:
+		pText = pParent->ToText();
+		printf( "Text: [%s]", pText->Value() );
+		break;
 
-    case TiXmlNode::DECLARATION:
-        printf( "Declaration" );
-        break;
-    default:
-        break;
-    }
-    
-    printf( "\n" );
+	case TiXmlNode::DECLARATION:
+		printf( "Declaration" );
+		break;
+	default:
+		break;
+	}
 
-    TiXmlNode * pChild;
+	printf( "\n" );
 
-    for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
-        dump_to_stdout( pChild, indent+2 );
-    }
+	TiXmlNode * pChild;
+
+	for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
+		dump_to_stdout( pChild, indent+2 );
+	}
 }
 
 
@@ -429,33 +430,32 @@ void Twitter::getTimeline(std::string configFilePath){
 	readFile(&token, &tokenSecret);
 
 	resourceTokenString = myOauth->requestResourceToken(token, tokenSecret, "http://api.twitter.com/1/statuses/friends_timeline.xml", "GET");
-	std::cout << std::endl << "resource request string: " << std::endl << resourceTokenString << std::endl;
 
 
-    TiXmlDocument doc("friends_timeline.xml");
-    bool loadOkay = doc.Parse(resourceTokenString.c_str(), 0, TIXML_ENCODING_UTF8);
-    
-    if (!loadOkay) {
-        printf( "Could not load timeline xml. Error='%s'. Exiting.\n", doc.ErrorDesc() );
-        exit( 1 );
-    }
-    
-    if (loadOkay) {
-        //dump_to_stdout( &doc ); //this dumps the entire xml using tinyxml's structure form (very sexy)
-        
-        TiXmlHandle docHandle(&doc);
-        
-        char blue[] = { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
-        char normal[] = { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
+	TiXmlDocument doc("friends_timeline.xml");
+	bool loadOkay = doc.Parse(resourceTokenString.c_str(), 0, TIXML_ENCODING_UTF8);
 
-        for (int i=19; i>=0; i--){
-            TiXmlElement *created_at = docHandle.FirstChild( "statuses" ).Child( "status", i ).Child( "created_at", 0 ).Element();
-            TiXmlElement *text = docHandle.FirstChild( "statuses" ).Child( "status", i ).Child( "text", 0 ).Element();
-            TiXmlElement *screen_name = docHandle.FirstChild( "statuses" ).Child( "status", i ).FirstChild( "user" ).Child( "screen_name", 0 ).Element();
-            
-            if (created_at && text && screen_name){
-                std::cout << blue << screen_name->GetText() << normal << ": " << text->GetText() << std::endl << "tweeted on: " << created_at->GetText() << std::endl << std::endl;
-            }
-        }
-    }
+	if (!loadOkay) {
+		printf( "Could not load timeline xml. Error='%s'. Exiting.\n", doc.ErrorDesc() );
+		exit( 1 );
+	}
+
+	if (loadOkay) {
+		//dump_to_stdout( &doc ); //this dumps the entire xml using tinyxml's structure form (very sexy)
+		
+		TiXmlHandle docHandle(&doc);
+		
+		char blue[] = { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
+		char normal[] = { 0x1b, '[', '0', ';', '3', '9', 'm', 0 };
+
+		for (int i=19; i>=0; i--){
+			TiXmlElement *created_at = docHandle.FirstChild( "statuses" ).Child( "status", i ).Child( "created_at", 0 ).Element();
+			TiXmlElement *text = docHandle.FirstChild( "statuses" ).Child( "status", i ).Child( "text", 0 ).Element();
+			TiXmlElement *screen_name = docHandle.FirstChild( "statuses" ).Child( "status", i ).FirstChild( "user" ).Child( "screen_name", 0 ).Element();
+			
+			if (created_at && text && screen_name){
+				std::cout << blue << screen_name->GetText() << normal << ": " << text->GetText() << std::endl << "tweeted on: " << created_at->GetText() << std::endl << std::endl;
+			}
+		}
+	}
 }
