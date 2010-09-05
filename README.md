@@ -6,7 +6,7 @@ Guys is command line utility used to keep tabs on your social networky accounts,
 Developpers are more likely to push features people will use and enjoy.
 You can [reach me](http://github.com/ramyD) and just, you know, ask!
 
-This project was started as trek, not a destination.
+This project was started as a trek, not a destination.
 
 How to use
 ------------
@@ -20,7 +20,7 @@ to post you can type either of these:
 
     guys -t this is my post
     guys -t
-    &#42&#42your Post: this is my post
+    **your Post: this is my post
 
 When you first run Guys, you will be asked for your password, this is only to create your OAuth access token which will be saved under ~/.config/guys/twitter
 If you feel your tokens have been compromised or simply wish to generate new ones, you can delete the twitter file and a new token will be generated the next time you use guys
