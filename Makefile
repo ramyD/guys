@@ -8,8 +8,8 @@
 
 CXXFLAGS=-Wall -std=c++98 -pedantic -Os
 
-guys: tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp format.cpp Oauth.cpp Guys.cpp Facebook.cpp Twitter.cpp Bitly.cpp guys0_07.cpp
-	g++ $(LDFLAGS) tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp format.cpp Oauth.cpp Guys.cpp Facebook.cpp Twitter.cpp Bitly.cpp guys0_07.cpp -lcurl -lcrypto++ -o guys
+guys: tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp format.cpp Oauth.cpp Guys.cpp Facebook.cpp Twitter.cpp Bitly.cpp guys1_0.cpp
+	g++ $(LDFLAGS) $(CXXFLAGS) tinyxml.cpp tinyxmlparser.cpp tinyxmlerror.cpp tinystr.cpp format.cpp Oauth.cpp Guys.cpp Facebook.cpp Twitter.cpp Bitly.cpp guys1_0.cpp -lcurl -lcrypto++ -o guys
 
 #guys: tinyxml.o guys.o
 #	g++ $(LDFLAGS) tinyxml.o guys.o -lcurl -o guys
