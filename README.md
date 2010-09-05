@@ -37,23 +37,23 @@ Instalation notes
 This application was made for ubuntu but should also work for other unix operating systems.
 
 dependencies:
-	* libcurl
-	* libcrypto++
-	* libuu 
+   * libcurl
+   * libcrypto++
+   * libuu 
 
 to install:
-	* [download the source](http://github.com/ramyD/guys/archives/master)
-	* type "make"
-	* move the "guys" executable to your /usr/local/bin/ or where ever
+   * [download the source](http://github.com/ramyD/guys/archives/master)
+   * type "make"
+   * move the "guys" executable to your /usr/local/bin/ or where ever
 
 
 Release notes
 ------------
 
-	* now uses Oauth
-	* facebook dropped
-	* identica progress halted
-	* keys storred in local user's /config directory
-	* does not store password locally, so config files can be deleted or permission revoked from the user's twitter page if necessary
+   * now uses Oauth
+   * facebook dropped
+   * identica progress halted
+   * keys stored in local user's /config directory
+   * does not store password locally, so config files can be deleted or permission revoked from the user's twitter page if necessary
 
 
