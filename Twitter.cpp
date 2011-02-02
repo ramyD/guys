@@ -145,7 +145,7 @@ std::string Twitter::getCode(std::string postData, std::string postUrl, std::str
 
 
 std::string Twitter::getPinNumber(std::string *twitterCodePage) {
-	std::cout << "<<< parsing for twitter pin" << std::endl;
+	//std::cout << "<<< parsing for twitter pin" << std::endl;
 	std::string tagInput = "<div id=\"oauth_pin\">";
 	size_t tagBegin, tagEnd;
 	tagBegin = twitterCodePage->find(tagInput);
