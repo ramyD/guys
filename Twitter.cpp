@@ -91,7 +91,7 @@ std::string Twitter::getPassword() {
 		passwordChar = getchar();
 		passwordStream << passwordChar;
 		putchar ('*');
-	} while (passwordChar != '\n');
+	} while (passwordChar != '\n'); //lol this doesn't work
 	
 	password = passwordStream.str();
 	password.erase(password.end()-1 ); //remove the last character which is "enter"
