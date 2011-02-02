@@ -71,9 +71,6 @@ std::string format::encrypt(std::string inputText, std::string inputKey) {
 
 	//inputKey = "A4iyWCQL5oR2ArYNYHmJ7THZH2BOmdHGEv6XsUOKI&q12345678901234567890123";
 
-	//std::cout << "encryption keys: " << inputKey  << std::endl;
-	//std::cout << "encrypting this string: " << inputText << std::endl;
-	
 	byte *key = (byte*)inputKey.c_str(); //initializing key
 	byte digest [ CryptoPP::HMAC<CryptoPP::SHA1>::DIGESTSIZE ]; //initlizing digest length
 
@@ -88,13 +85,17 @@ std::string format::encrypt(std::string inputText, std::string inputKey) {
 
 	unsigned int size = calculateBase64Size(sizeof(digest) ); //calculate the size of the base64 encoded digest!
 	byte* encodedValues = new byte[size]; //giving enough room for the encoded values array
+	char transferValues[size];
 
 	base64.Get( encodedValues, size ); //filling the variable with the encoded values
-	std::string encodedString = (char*)encodedValues;
-	encodedString.at(size) = '\0'; //giving the string a proper \0 ending
+	std::string encodedString;
 
-	//std::cout << "encrption result: " << encodedString << std::endl;
+	memcpy(transferValues, encodedValues, size);
 
+	for (unsigned int i=0; i<size; i++) {
+		encodedString += transferValues[i];
+	}
+	
 	return encodedString;
 }
 
